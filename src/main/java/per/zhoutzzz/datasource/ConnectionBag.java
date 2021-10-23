@@ -40,29 +40,30 @@ public class ConnectionBag {
 
     private final AtomicBoolean shutdownStatus = new AtomicBoolean(false);
 
-    private static final ArrayBlockingQueue<MyProxyConnection> ACTIVE_LINK_QUEUE = new ArrayBlockingQueue<>(2);
+    private static final ArrayBlockingQueue<MyProxyConnection> ACTIVE_LINK_QUEUE = new ArrayBlockingQueue<>(1);
 
-    private static final ArrayBlockingQueue<MyProxyConnection> IDLE_LINK_QUEUE = new ArrayBlockingQueue<>(2);
+    private static final ArrayBlockingQueue<MyProxyConnection> IDLE_LINK_QUEUE = new ArrayBlockingQueue<>(1);
 
     private final BagConnectionListener listener;
 
     public Connection borrow() throws SQLException {
         MyProxyConnection conn;
-        if (IDLE_LINK_QUEUE.size() > 0) {
-            conn = IDLE_LINK_QUEUE.poll();
-            ACTIVE_LINK_QUEUE.offer(conn);
-            return conn;
-        } else {
-            if (shutdownStatus.get()) {
-                throw new SQLException("shutdown, no connection");
+        synchronized (this) {
+            if (IDLE_LINK_QUEUE.size() > 0) {
+                conn = IDLE_LINK_QUEUE.poll();
+                ACTIVE_LINK_QUEUE.offer(conn);
+            } else {
+                if (shutdownStatus.get()) {
+                    throw new SQLException("shutdown, no connection");
+                }
+                conn = listener.addBagItem();
+                boolean offer = ACTIVE_LINK_QUEUE.offer(conn);
+                if (offer) {
+                    throw new SQLException("pool is full");
+                }
             }
-            MyProxyConnection myProxyConnection = listener.addBagItem();
-            boolean offer = ACTIVE_LINK_QUEUE.offer(myProxyConnection);
-            if (offer) {
-                throw new SQLException("pool is full");
-            }
-            return myProxyConnection;
         }
+        return conn;
 
     }
 
@@ -72,11 +73,7 @@ public class ConnectionBag {
     }
 
     void add(MyProxyConnection conn) throws ConnectException {
-        if (ACTIVE_LINK_QUEUE.size() < 16) {
-            ACTIVE_LINK_QUEUE.offer(conn);
-        } else {
-            throw new ConnectException("connection is busy, no more connection available.");
-        }
+        IDLE_LINK_QUEUE.offer(conn);
     }
 
     public void clean() {

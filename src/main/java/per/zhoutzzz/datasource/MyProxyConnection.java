@@ -34,10 +34,6 @@ public class MyProxyConnection implements Connection, Closeable {
 
     private final ConnectionBag bag;
 
-//    public Connection getConnection() {
-//        return currentConnection;
-//    }
-
     @Override
     public Statement createStatement() throws SQLException {
         return currentConnection.createStatement();

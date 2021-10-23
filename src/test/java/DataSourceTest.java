@@ -16,6 +16,7 @@
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.RequiredArgsConstructor;
 import per.zhoutzzz.datasource.MyDataSource;
 //import per.zhoutzzz.datasource.MyDataSource;
 
@@ -37,30 +38,18 @@ public class DataSourceTest {
         String pwd = "root";
         String url = "jdbc:mysql://localhost:3306/study?useSSL=false";
         MyDataSource myDataSource = new MyDataSource(username, pwd, url);
-        for (int i = 0; i < 40; i++) {
-            new Thread(() -> {
-                int count = 0;
-                try {
-                    Connection connection;
-                    do {
-                        System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
-                        Thread.sleep(1000L);
-                        connection = myDataSource.getConnection();
-                    } while (connection == null && ++count < 3);
-                    if (count == 3) {
-                        return;
-                    }
-                    PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
-                    ResultSet resultSet = preparedStatement.executeQuery();
-                    while (resultSet.next()) {
-                        System.out.println(Thread.currentThread().getName() + "@" + connection.toString() + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
-                    }
-                    connection.close();
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-            }).start();
-        }
+
+        Thread t1 = new Thread(new Task(myDataSource));
+        Thread t2 = new Thread(new Task(myDataSource));
+        Thread t3 = new Thread(new Task(myDataSource));
+        Thread t4 = new Thread(new Task(myDataSource));
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+//        for (int i = 0; i < 40; i++) {
+//
+//        }
     }
 
 //    public static void main(String[] args) throws Exception {
@@ -88,4 +77,37 @@ public class DataSourceTest {
 //
 //        }
 //    }
+}
+
+@RequiredArgsConstructor
+class Task implements Runnable{
+
+    private final MyDataSource myDataSource;
+
+    @Override
+    public void run() {
+        int count = 0;
+        while (true) {
+            try {
+                Connection connection;
+                do {
+                    Thread.sleep(1000L);
+                    connection = myDataSource.getConnection();
+                } while (connection == null && ++count < 3);
+                if (count == 3) {
+                    System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
+                    return;
+                }
+                PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+                }
+                connection.close();
+                Thread.yield();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
 }
