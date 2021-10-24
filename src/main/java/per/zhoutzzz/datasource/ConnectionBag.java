@@ -56,9 +56,12 @@ public class ConnectionBag {
                 if (shutdownStatus.get()) {
                     throw new SQLException("shutdown, no connection");
                 }
+                if (ACTIVE_LINK_QUEUE.size() == 1) {
+                    throw new SQLException("pool is full");
+                }
                 conn = listener.addBagItem();
                 boolean offer = ACTIVE_LINK_QUEUE.offer(conn);
-                if (offer) {
+                if (!offer) {
                     throw new SQLException("pool is full");
                 }
             }
