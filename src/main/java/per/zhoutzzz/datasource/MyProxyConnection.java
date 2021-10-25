@@ -23,6 +23,9 @@ import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * @author zhoutzzz
@@ -76,6 +79,11 @@ public class MyProxyConnection implements Connection, Closeable {
 
     public void close() {
         bag.requite(this);
+        try {
+            this.currentConnection.setNetworkTimeout(null, (int) SECONDS.toMillis(10));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
