@@ -23,6 +23,7 @@ import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.*;
@@ -36,6 +37,8 @@ public class MyProxyConnection implements Connection, Closeable {
     private final Connection currentConnection;
 
     private final ConnectionBag bag;
+
+    private static final Executor TIME_OUT_EXECUTOR = Executors.newSingleThreadExecutor();
 
     @Override
     public Statement createStatement() throws SQLException {
@@ -80,7 +83,7 @@ public class MyProxyConnection implements Connection, Closeable {
     public void close() {
         bag.requite(this);
         try {
-            this.currentConnection.setNetworkTimeout(null, (int) SECONDS.toMillis(10));
+            this.currentConnection.setNetworkTimeout(TIME_OUT_EXECUTOR, (int) SECONDS.toMillis(10));
         } catch (Exception e) {
             e.printStackTrace();
         }

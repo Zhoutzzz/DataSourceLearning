@@ -64,7 +64,7 @@ public class DataSourceTest {
                     PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
                     ResultSet resultSet = preparedStatement.executeQuery();
                     while (resultSet.next()) {
-                        System.out.println(Thread.currentThread().getName() + "@" + connection.toString() + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+                        System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
                     }
                     connection.close();
                 } catch (Exception e) {
