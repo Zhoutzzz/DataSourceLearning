@@ -24,9 +24,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * @author zhoutzzz
@@ -34,7 +33,12 @@ import static java.util.concurrent.TimeUnit.*;
 @RequiredArgsConstructor
 public class MyProxyConnection implements Connection, Closeable {
 
-    private final Connection currentConnection;
+    private Connection currentConnection;
+
+    public MyProxyConnection(Connection currentConnection, ConnectionBag bag) {
+        this.currentConnection = currentConnection;
+        this.bag = bag;
+    }
 
     private final ConnectionBag bag;
 
@@ -82,11 +86,6 @@ public class MyProxyConnection implements Connection, Closeable {
 
     public void close() {
         bag.requite(this);
-        try {
-            this.currentConnection.setNetworkTimeout(TIME_OUT_EXECUTOR, (int) SECONDS.toMillis(10));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -304,9 +303,10 @@ public class MyProxyConnection implements Connection, Closeable {
         return 0;
     }
 
-    public void remove() {
+    void remove() {
         try {
-            currentConnection.close();
+            this.currentConnection.setNetworkTimeout(TIME_OUT_EXECUTOR, (int) SECONDS.toMillis(10));
+            this.currentConnection = null;
         } catch (Exception e) {
             e.printStackTrace();
         }

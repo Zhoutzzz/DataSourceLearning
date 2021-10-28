@@ -39,30 +39,29 @@ public class ConnectionBag {
 
     private final AtomicBoolean shutdownStatus = new AtomicBoolean(false);
 
-    private static final ArrayBlockingQueue<MyProxyConnection> ACTIVE_LINK_QUEUE = new ArrayBlockingQueue<>(1);
+    private static final ArrayBlockingQueue<MyProxyConnection> ACTIVE_LINK_QUEUE = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors() << 1);
 
-    private static final ArrayBlockingQueue<MyProxyConnection> IDLE_LINK_QUEUE = new ArrayBlockingQueue<>(1);
+    private static final ArrayBlockingQueue<MyProxyConnection> IDLE_LINK_QUEUE = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors());
 
     private final BagConnectionListener listener;
 
     public Connection borrow() throws SQLException {
         MyProxyConnection conn;
-        synchronized (this) {
-            if (IDLE_LINK_QUEUE.size() > 0) {
-                conn = IDLE_LINK_QUEUE.poll();
-                ACTIVE_LINK_QUEUE.offer(conn);
-            } else {
-                if (shutdownStatus.get()) {
-                    throw new SQLException("shutdown, no connection");
-                }
-                if (ACTIVE_LINK_QUEUE.size() == 1) {
-                    throw new SQLException("pool is full");
-                }
-                conn = listener.addBagItem();
-                boolean offer = ACTIVE_LINK_QUEUE.offer(conn);
-                if (!offer) {
-                    throw new SQLException("pool is full");
-                }
+        if (IDLE_LINK_QUEUE.size() > 0) {
+            conn = IDLE_LINK_QUEUE.poll();
+            ACTIVE_LINK_QUEUE.offer(conn);
+        } else {
+            if (shutdownStatus.get()) {
+                throw new SQLException("shutdown, no connection");
+            }
+            if (ACTIVE_LINK_QUEUE.size() == IDLE_LINK_QUEUE.size()) {
+                throw new SQLException("pool is full");
+            }
+            conn = listener.addBagItem();
+            boolean offer = ACTIVE_LINK_QUEUE.offer(conn);
+            if (!offer) {
+                conn.close();
+                throw new SQLException("pool is full");
             }
         }
         return conn;
