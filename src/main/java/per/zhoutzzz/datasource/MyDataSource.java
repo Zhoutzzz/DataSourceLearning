@@ -32,6 +32,14 @@ public class MyDataSource implements DataSource {
 
     private final MyConnectionPool pool;
 
+    public MyDataSource(PoolConfig config) throws Exception {
+        int actualPoolSize = config.getActivePoolSize() + config.getIdlePoolSize();
+        if (actualPoolSize > config.getMaxPoolSize()) {
+            throw new IllegalArgumentException("the activePoolSize add idlePoolSize must be smaller or equal maxPoolSize");
+        }
+        this.pool = new MyConnectionPool(config);
+    }
+
     public MyDataSource(String username, String password, String url) throws Exception {
         Properties variables = new Properties();
         variables.setProperty("password", password);

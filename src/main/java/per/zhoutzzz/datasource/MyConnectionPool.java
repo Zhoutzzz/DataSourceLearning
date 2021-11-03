@@ -34,6 +34,16 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final DataSource source;
 
+    public MyConnectionPool(PoolConfig config) throws Exception {
+        Properties properties = new Properties();
+        properties.setProperty("username", config.getUsername());
+        properties.setProperty("password", config.getPassword());
+        properties.setProperty("jdbcUrl", config.getJdbcUrl());
+        this.source = new DriverSource(properties);
+        this.bag = new ConnectionBag(this, config);
+        initConnection();
+    }
+
     public MyConnectionPool(Properties dataSourceProp) throws Exception {
         this.source = new DriverSource(dataSourceProp);
         this.bag = new ConnectionBag(this);

@@ -31,7 +31,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author zhoutzzz
  */
 
-@RequiredArgsConstructor
 @Slf4j
 public class ConnectionBag {
 
@@ -39,26 +38,51 @@ public class ConnectionBag {
 
     private final AtomicBoolean shutdownStatus = new AtomicBoolean(false);
 
-    private static final ArrayBlockingQueue<MyProxyConnection> ACTIVE_LINK_QUEUE = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors() << 1);
+    private final ArrayBlockingQueue<MyProxyConnection> activeLinkQueue;
 
-    private static final ArrayBlockingQueue<MyProxyConnection> IDLE_LINK_QUEUE = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors());
+    private final ArrayBlockingQueue<MyProxyConnection> idleLinkQueue;
 
     private final BagConnectionListener listener;
 
+    private static final Integer DEFAULT_SIZE = Runtime.getRuntime().availableProcessors();
+
+    private static final Long DEFAULT_TIMEOUT_MILLS = 300000L;
+
+    private final Integer maxPoolSize;
+
+    private final Long connectionTimeoutMills;
+
+
+    public ConnectionBag(BagConnectionListener listener, PoolConfig config) {
+        this.listener = listener;
+        this.activeLinkQueue = config.getActivePoolSize() != null ? new ArrayBlockingQueue<>(config.getActivePoolSize()) : new ArrayBlockingQueue<>(DEFAULT_SIZE << 1);
+        this.idleLinkQueue = config.getIdlePoolSize() != null ? new ArrayBlockingQueue<>(config.getIdlePoolSize()) : new ArrayBlockingQueue<>(DEFAULT_SIZE);
+        this.maxPoolSize = config.getMaxPoolSize() == null ? DEFAULT_SIZE : config.getMaxPoolSize();
+        this.connectionTimeoutMills = config.getConnectionTimeoutMills() == null ? DEFAULT_TIMEOUT_MILLS : config.getConnectionTimeoutMills();
+    }
+
+    public ConnectionBag(BagConnectionListener listener) {
+        this.listener = listener;
+        activeLinkQueue = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors() << 1);
+        idleLinkQueue = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors());
+        this.maxPoolSize = DEFAULT_SIZE;
+        this.connectionTimeoutMills = DEFAULT_TIMEOUT_MILLS;
+    }
+
     public Connection borrow() throws SQLException {
         MyProxyConnection conn;
-        if (IDLE_LINK_QUEUE.size() > 0) {
-            conn = IDLE_LINK_QUEUE.poll();
-            ACTIVE_LINK_QUEUE.offer(conn);
+        if (idleLinkQueue.size() > 0) {
+            conn = idleLinkQueue.poll();
+            activeLinkQueue.offer(conn);
         } else {
             if (shutdownStatus.get()) {
                 throw new SQLException("shutdown, no connection");
             }
-            if (ACTIVE_LINK_QUEUE.size() == IDLE_LINK_QUEUE.size()) {
+            if (activeLinkQueue.size() == idleLinkQueue.size()) {
                 throw new SQLException("pool is full");
             }
             conn = listener.addBagItem();
-            boolean offer = ACTIVE_LINK_QUEUE.offer(conn);
+            boolean offer = activeLinkQueue.offer(conn);
             if (!offer) {
                 conn.close();
                 throw new SQLException("pool is full");
@@ -69,12 +93,12 @@ public class ConnectionBag {
     }
 
     public void requite(MyProxyConnection connection) {
-        ACTIVE_LINK_QUEUE.remove(connection);
-        IDLE_LINK_QUEUE.offer(connection);
+        activeLinkQueue.remove(connection);
+        idleLinkQueue.offer(connection);
     }
 
     void add(MyProxyConnection conn) throws ConnectException {
-        IDLE_LINK_QUEUE.offer(conn);
+        idleLinkQueue.offer(conn);
     }
 
     public void clean() {
@@ -85,11 +109,11 @@ public class ConnectionBag {
                 while (!shutdownStatus.compareAndSet(false, true)) {
                     log.info("shutdown");
                 }
-                for (MyProxyConnection proxyConnection : IDLE_LINK_QUEUE) {
+                for (MyProxyConnection proxyConnection : idleLinkQueue) {
                     proxyConnection.remove();
                 }
-                IDLE_LINK_QUEUE.clear();
-                while (ACTIVE_LINK_QUEUE.size() > 0) {
+                idleLinkQueue.clear();
+                while (activeLinkQueue.size() > 0) {
                     log.info("waiting active connection close");
                 }
             }
