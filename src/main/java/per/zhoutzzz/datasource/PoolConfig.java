@@ -16,8 +16,10 @@
 
 package per.zhoutzzz.datasource;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author zhoutzzz
@@ -33,9 +35,9 @@ public class PoolConfig {
 
     private Integer maxPoolSize;
 
-    private Integer idlePoolSize;
-
-    private Integer activePoolSize;
+    private Integer minIdle;
 
     private Long connectionTimeoutMills;
+
+    private Long idleTimeout;
 }

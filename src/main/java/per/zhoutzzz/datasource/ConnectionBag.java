@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,8 +56,8 @@ public class ConnectionBag {
 
     public ConnectionBag(BagConnectionListener listener, PoolConfig config) {
         this.listener = listener;
-        this.activeLinkQueue = config.getActivePoolSize() != null ? new ArrayBlockingQueue<>(config.getActivePoolSize()) : new ArrayBlockingQueue<>(DEFAULT_SIZE << 1);
-        this.idleLinkQueue = config.getIdlePoolSize() != null ? new ArrayBlockingQueue<>(config.getIdlePoolSize()) : new ArrayBlockingQueue<>(DEFAULT_SIZE);
+        this.activeLinkQueue = new ArrayBlockingQueue<>(DEFAULT_SIZE << 1);
+        this.idleLinkQueue = new ArrayBlockingQueue<>(DEFAULT_SIZE);
         this.maxPoolSize = config.getMaxPoolSize() == null ? DEFAULT_SIZE : config.getMaxPoolSize();
         this.connectionTimeoutMills = config.getConnectionTimeoutMills() == null ? DEFAULT_TIMEOUT_MILLS : config.getConnectionTimeoutMills();
     }
@@ -69,11 +70,19 @@ public class ConnectionBag {
         this.connectionTimeoutMills = DEFAULT_TIMEOUT_MILLS;
     }
 
-    public Connection borrow() throws SQLException {
+    public Connection borrow(long timeout, TimeUnit unit) throws SQLException {
         MyProxyConnection conn;
         if (idleLinkQueue.size() > 0) {
-            conn = idleLinkQueue.poll();
-            activeLinkQueue.offer(conn);
+            try {
+                if (timeout <= 0) {
+                    conn = idleLinkQueue.poll();
+                } else {
+                    conn = idleLinkQueue.poll(timeout, unit);
+                }
+                activeLinkQueue.offer(conn);
+            } catch (InterruptedException e) {
+                throw new SQLTimeoutException("get connection timeout");
+            }
         } else {
             if (shutdownStatus.get()) {
                 throw new SQLException("shutdown, no connection");

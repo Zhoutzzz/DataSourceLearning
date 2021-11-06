@@ -18,6 +18,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import per.zhoutzzz.datasource.MyDataSource;
+import per.zhoutzzz.datasource.PoolConfig;
 //import per.zhoutzzz.datasource.MyDataSource;
 
 import java.sql.Connection;
@@ -33,46 +34,51 @@ public class DataSourceTest {
 
     static final AtomicInteger integer = new AtomicInteger();
 
-//    public static void main(String[] args) throws Exception {
-//        String username = "root";
-//        String pwd = "root";
-//        String url = "jdbc:mysql://localhost:3306/study?useSSL=false";
-//        MyDataSource myDataSource = new MyDataSource(username, pwd, url);
-//
-//        Thread t1 = new Thread(new Task(myDataSource));
-//        Thread t2 = new Thread(new Task(myDataSource));
-//        Thread t3 = new Thread(new Task(myDataSource));
-//        Thread t4 = new Thread(new Task(myDataSource));
-//        t1.start();
-//        t2.start();
-//        t3.start();
-//        t4.start();
-//    }
-
     public static void main(String[] args) throws Exception {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
-        hikariConfig.setUsername("root");
-        hikariConfig.setPassword("root");
-        hikariConfig.setMaximumPoolSize(2);
-        HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
-        for (int i = 0; i < 10; i++) {
-            new Thread(() -> {
-                try {
-                    Connection connection = hikariDataSource.getConnection();
-                    PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
-                    ResultSet resultSet = preparedStatement.executeQuery();
-                    while (resultSet.next()) {
-                        System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
-                    }
-                    connection.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
+        PoolConfig.PoolConfigBuilder config = PoolConfig.builder();
+        config.username("root");
+        config.password("root");
+        config.jdbcUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
+        config.maxPoolSize(10);
+        config.minIdle(4);
+        config.connectionTimeoutMills(3000L);
 
-        }
+        MyDataSource myDataSource = new MyDataSource(config.build());
+
+        Thread t1 = new Thread(new Task(myDataSource));
+        Thread t2 = new Thread(new Task(myDataSource));
+        Thread t3 = new Thread(new Task(myDataSource));
+        Thread t4 = new Thread(new Task(myDataSource));
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
     }
+
+//    public static void main(String[] args) throws Exception {
+//        HikariConfig hikariConfig = new HikariConfig();
+//        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
+//        hikariConfig.setUsername("root");
+//        hikariConfig.setPassword("root");
+//        hikariConfig.setMaximumPoolSize(2);
+//        HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
+//        for (int i = 0; i < 10; i++) {
+//            new Thread(() -> {
+//                try {
+//                    Connection connection = hikariDataSource.getConnection();
+//                    PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
+//                    ResultSet resultSet = preparedStatement.executeQuery();
+//                    while (resultSet.next()) {
+//                        System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+//                    }
+//                    connection.close();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }).start();
+//
+//        }
+//    }
 }
 
 @RequiredArgsConstructor

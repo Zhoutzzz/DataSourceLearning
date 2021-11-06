@@ -22,7 +22,9 @@ import javax.sql.DataSource;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhoutzzz
@@ -34,20 +36,13 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final DataSource source;
 
-    public MyConnectionPool(PoolConfig config) throws Exception {
-        Properties properties = new Properties();
-        properties.setProperty("username", config.getUsername());
-        properties.setProperty("password", config.getPassword());
-        properties.setProperty("jdbcUrl", config.getJdbcUrl());
-        this.source = new DriverSource(properties);
-        this.bag = new ConnectionBag(this, config);
-        initConnection();
-    }
+    private PoolConfig config;
 
-    public MyConnectionPool(Properties dataSourceProp) throws Exception {
-        this.source = new DriverSource(dataSourceProp);
+    public MyConnectionPool(PoolConfig config) throws Exception {
+        this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
         this.bag = new ConnectionBag(this);
-        initConnection();
+        this.config = config;
+        this.initConnection();
     }
 
     private void initConnection() throws SQLException, ConnectException {
@@ -57,7 +52,19 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     }
 
     public Connection getConnection() throws SQLException {
-        return bag.borrow();
+        return this.getConnection(0, TimeUnit.SECONDS);
+    }
+
+    public Connection getConnection(long timeout, TimeUnit unit) throws SQLException {
+        var startTime = System.currentTimeMillis();
+        do {
+            Connection conn = bag.borrow(timeout, unit);
+            if (conn == null) {
+                continue;
+            }
+            return conn;
+        } while (startTime - System.currentTimeMillis() < config.getConnectionTimeoutMills());
+        throw new SQLTimeoutException("get connection timeout;");
     }
 
     public DataSource getSource() {

@@ -19,10 +19,8 @@ package per.zhoutzzz.datasource;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -33,21 +31,7 @@ public class MyDataSource implements DataSource {
     private final MyConnectionPool pool;
 
     public MyDataSource(PoolConfig config) throws Exception {
-        if (config.getMaxPoolSize() != null && config.getIdlePoolSize() != null && config.getActivePoolSize() != null) {
-            int actualPoolSize = config.getActivePoolSize() + config.getIdlePoolSize();
-            if (actualPoolSize > config.getMaxPoolSize()) {
-                throw new IllegalArgumentException("the activePoolSize add idlePoolSize must be smaller or equal maxPoolSize");
-            }
-        }
         this.pool = new MyConnectionPool(config);
-    }
-
-    public MyDataSource(String username, String password, String url) throws Exception {
-        Properties variables = new Properties();
-        variables.setProperty("password", password);
-        variables.setProperty("username", username);
-        variables.setProperty("jdbcUrl", url);
-        this.pool = new MyConnectionPool(variables);
     }
 
     @Override

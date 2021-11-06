@@ -53,10 +53,6 @@ public class DriverSource implements DataSource {
         init();
     }
 
-    public DriverSource(Properties dataSourceProps) throws Exception {
-        this(dataSourceProps.getProperty("username"), dataSourceProps.getProperty("password"), dataSourceProps.getProperty("jdbcUrl"));
-    }
-
     private void init() {
         try {
             this.variables.setProperty("password", password);
