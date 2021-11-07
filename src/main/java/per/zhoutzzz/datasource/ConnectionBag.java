@@ -23,7 +23,9 @@ import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,25 +51,15 @@ public class ConnectionBag {
 
     private static final Long DEFAULT_TIMEOUT_MILLS = 300000L;
 
-    private final Integer maxPoolSize;
-
     private final Long connectionTimeoutMills;
 
-
-    public ConnectionBag(BagConnectionListener listener, PoolConfig config) {
-        this.listener = listener;
-        this.activeLinkQueue = new ArrayBlockingQueue<>(DEFAULT_SIZE << 1);
-        this.idleLinkQueue = new ArrayBlockingQueue<>(DEFAULT_SIZE);
-        this.maxPoolSize = config.getMaxPoolSize() == null ? DEFAULT_SIZE : config.getMaxPoolSize();
-        this.connectionTimeoutMills = config.getConnectionTimeoutMills() == null ? DEFAULT_TIMEOUT_MILLS : config.getConnectionTimeoutMills();
-    }
-
-    public ConnectionBag(BagConnectionListener listener) {
-        this.listener = listener;
-        activeLinkQueue = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors() << 1);
-        idleLinkQueue = new ArrayBlockingQueue<>(Runtime.getRuntime().availableProcessors());
-        this.maxPoolSize = DEFAULT_SIZE;
+    public ConnectionBag(BagConnectionListener listener, Integer maxPoolSize, Integer minIdle) {
+        int poolMinIdle = Objects.isNull(maxPoolSize) ? 1 : minIdle;
+        int poolActiveSize = Objects.isNull(maxPoolSize) ? DEFAULT_SIZE : maxPoolSize - poolMinIdle;
         this.connectionTimeoutMills = DEFAULT_TIMEOUT_MILLS;
+        this.listener = listener;
+        this.activeLinkQueue = new ArrayBlockingQueue<>(poolActiveSize);
+        this.idleLinkQueue = new ArrayBlockingQueue<>(poolMinIdle);
     }
 
     public Connection borrow(long timeout, TimeUnit unit) throws SQLException {

@@ -23,7 +23,6 @@ import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,7 +39,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
-        this.bag = new ConnectionBag(this);
+        this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
         this.initConnection();
     }

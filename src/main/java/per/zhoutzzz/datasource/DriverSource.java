@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhoutzzz
@@ -63,8 +64,11 @@ public class DriverSource implements DataSource {
         }
     }
 
+    private final AtomicInteger i = new AtomicInteger(0);
+
     @Override
     public Connection getConnection() throws SQLException {
+        System.out.println("创建第" + i.incrementAndGet() + "个连接");
         return driver.connect(url, variables);
     }
 

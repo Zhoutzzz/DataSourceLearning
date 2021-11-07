@@ -32,8 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DataSourceTest {
 
-    static final AtomicInteger integer = new AtomicInteger();
-
     public static void main(String[] args) throws Exception {
         PoolConfig.PoolConfigBuilder config = PoolConfig.builder();
         config.username("root");
@@ -45,14 +43,9 @@ public class DataSourceTest {
 
         MyDataSource myDataSource = new MyDataSource(config.build());
 
-        Thread t1 = new Thread(new Task(myDataSource));
-        Thread t2 = new Thread(new Task(myDataSource));
-        Thread t3 = new Thread(new Task(myDataSource));
-        Thread t4 = new Thread(new Task(myDataSource));
-        t1.start();
-        t2.start();
-        t3.start();
-        t4.start();
+        for (int i = 0; i < 20; i++) {
+            new Thread(new Task(myDataSource)).start();
+        }
     }
 
 //    public static void main(String[] args) throws Exception {
@@ -102,7 +95,7 @@ class Task implements Runnable{
                 PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+//                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
                 }
                 connection.close();
                 Thread.yield();
