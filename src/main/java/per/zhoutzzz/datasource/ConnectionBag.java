@@ -63,32 +63,8 @@ public class ConnectionBag {
     }
 
     public Connection borrow(long timeout, TimeUnit unit) throws SQLException {
-        MyProxyConnection conn;
-        if (idleLinkQueue.size() > 0) {
-            try {
-                if (timeout <= 0) {
-                    conn = idleLinkQueue.poll();
-                } else {
-                    conn = idleLinkQueue.poll(timeout, unit);
-                }
-                activeLinkQueue.offer(conn);
-            } catch (InterruptedException e) {
-                throw new SQLTimeoutException("get connection timeout");
-            }
-        } else {
-            if (shutdownStatus.get()) {
-                throw new SQLException("shutdown, no connection");
-            }
-            if (activeLinkQueue.size() == idleLinkQueue.size()) {
-                throw new SQLException("pool is full");
-            }
-            conn = listener.addBagItem();
-            boolean offer = activeLinkQueue.offer(conn);
-            if (!offer) {
-                conn.close();
-                throw new SQLException("pool is full");
-            }
-        }
+        MyProxyConnection conn = null;
+        // TODO
         return conn;
 
     }
