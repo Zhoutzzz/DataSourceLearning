@@ -49,14 +49,9 @@ public class ConnectionBag {
 
     private static final Integer DEFAULT_SIZE = Runtime.getRuntime().availableProcessors();
 
-    private static final Long DEFAULT_TIMEOUT_MILLS = 300000L;
-
-    private final Long connectionTimeoutMills;
-
     public ConnectionBag(BagConnectionListener listener, Integer maxPoolSize, Integer minIdle) {
         int poolMinIdle = Objects.isNull(maxPoolSize) ? 1 : minIdle;
         int poolActiveSize = Objects.isNull(maxPoolSize) ? DEFAULT_SIZE : maxPoolSize - poolMinIdle;
-        this.connectionTimeoutMills = DEFAULT_TIMEOUT_MILLS;
         this.listener = listener;
         this.activeLinkQueue = new ArrayBlockingQueue<>(poolActiveSize);
         this.idleLinkQueue = new ArrayBlockingQueue<>(poolMinIdle);
