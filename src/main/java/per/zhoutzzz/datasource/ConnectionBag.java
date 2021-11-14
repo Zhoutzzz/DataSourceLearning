@@ -60,6 +60,11 @@ public class ConnectionBag {
     public Connection borrow(long timeout, TimeUnit unit) throws SQLException {
         MyProxyConnection conn = null;
         // TODO
+        try {
+            activeLinkQueue.poll(timeout, unit);
+        } catch (Exception e) {
+
+        }
         return conn;
 
     }
