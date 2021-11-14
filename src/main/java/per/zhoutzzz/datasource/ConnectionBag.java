@@ -28,6 +28,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -47,11 +49,17 @@ public class ConnectionBag {
 
     private final BagConnectionListener listener;
 
-    private static final Integer DEFAULT_SIZE = Runtime.getRuntime().availableProcessors();
+    private static final Integer DEFAULT_MAX_SIZE = Runtime.getRuntime().availableProcessors();
+
+    private static final Integer DEFAULT_IDLE_SIZE = 1;
+
+    private final int poolActiveSize;
+
+    private final AtomicInteger allConnectionSize = new AtomicInteger(0);
 
     public ConnectionBag(BagConnectionListener listener, Integer maxPoolSize, Integer minIdle) {
-        int poolMinIdle = Objects.isNull(maxPoolSize) ? 1 : minIdle;
-        int poolActiveSize = Objects.isNull(maxPoolSize) ? DEFAULT_SIZE : maxPoolSize - poolMinIdle;
+        int poolMinIdle = Objects.isNull(maxPoolSize) ? DEFAULT_IDLE_SIZE : minIdle;
+        poolActiveSize = Objects.isNull(maxPoolSize) ? DEFAULT_MAX_SIZE : maxPoolSize;
         this.listener = listener;
         this.activeLinkQueue = new ArrayBlockingQueue<>(poolActiveSize);
         this.idleLinkQueue = new ArrayBlockingQueue<>(poolMinIdle);
@@ -61,16 +69,34 @@ public class ConnectionBag {
         MyProxyConnection conn = null;
         // TODO
         try {
-            activeLinkQueue.poll(timeout, unit);
-        } catch (Exception e) {
-
+            boolean isOffer;
+            if (!idleLinkQueue.isEmpty()) {
+                conn = idleLinkQueue.poll(timeout, unit);
+                if (conn != null) {
+                    do {
+                        isOffer = activeLinkQueue.offer(conn);
+                    } while (!isOffer);
+                    allConnectionSize.incrementAndGet();
+                }
+            } else if (allConnectionSize.get() <= poolActiveSize) {
+                conn = listener.addBagItem();
+                do {
+                    isOffer = activeLinkQueue.offer(conn);
+                } while (!isOffer);
+                allConnectionSize.incrementAndGet();
+            }
+            return conn;
+        } catch (InterruptedException e) {
+            throw new SQLTimeoutException(e);
         }
-        return conn;
-
     }
 
     public void requite(MyProxyConnection connection) {
-        activeLinkQueue.remove(connection);
+        boolean isRemove;
+        do {
+            isRemove = activeLinkQueue.remove(connection);
+        }
+        while (isRemove);
         idleLinkQueue.offer(connection);
     }
 
