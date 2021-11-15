@@ -14,17 +14,13 @@
  * copies or substantial portions of the Software.
  */
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import per.zhoutzzz.datasource.MyDataSource;
 import per.zhoutzzz.datasource.PoolConfig;
-//import per.zhoutzzz.datasource.MyDataSource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhoutzzz
@@ -57,16 +53,18 @@ public class DataSourceTest {
 //        HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
 //        for (int i = 0; i < 10; i++) {
 //            new Thread(() -> {
-//                try {
-//                    Connection connection = hikariDataSource.getConnection();
-//                    PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
-//                    ResultSet resultSet = preparedStatement.executeQuery();
-//                    while (resultSet.next()) {
-//                        System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+//                while (true) {
+//                    try {
+//                        Connection connection = hikariDataSource.getConnection();
+//                        PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
+//                        ResultSet resultSet = preparedStatement.executeQuery();
+//                        while (resultSet.next()) {
+//                            System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+//                        }
+//                        connection.close();
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
 //                    }
-//                    connection.close();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
 //                }
 //            }).start();
 //
@@ -95,7 +93,7 @@ class Task implements Runnable{
                 PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-//                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
                 }
                 connection.close();
                 Thread.yield();

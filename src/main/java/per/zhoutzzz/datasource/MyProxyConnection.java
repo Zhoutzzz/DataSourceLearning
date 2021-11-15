@@ -35,12 +35,12 @@ public class MyProxyConnection implements Connection, Closeable {
 
     private Connection currentConnection;
 
+    private final ConnectionBag bag;
+
     public MyProxyConnection(Connection currentConnection, ConnectionBag bag) {
         this.currentConnection = currentConnection;
         this.bag = bag;
     }
-
-    private final ConnectionBag bag;
 
     private static final Executor TIME_OUT_EXECUTOR = Executors.newSingleThreadExecutor();
 
