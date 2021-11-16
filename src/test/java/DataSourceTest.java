@@ -41,7 +41,6 @@ public class DataSourceTest {
 
         MyDataSource myDataSource = new MyDataSource(config.build());
 
-        DataSourceTest dataSourceTest = new DataSourceTest();
         for (int i = 0; i < 20; i++) {
             new Thread(new Task(myDataSource)).start();
         }
