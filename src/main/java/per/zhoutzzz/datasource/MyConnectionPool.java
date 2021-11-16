@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhoutzzz
@@ -35,19 +36,20 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final DataSource source;
 
+    private final AtomicInteger totalConnections;
+
     private PoolConfig config;
 
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
+        this.totalConnections = new AtomicInteger(0);
         this.initConnection();
     }
 
-    private void initConnection() throws SQLException, ConnectException {
-        Connection connection = source.getConnection();
-        MyProxyConnection proxyConnection = new MyProxyConnection(connection, this.bag);
-        bag.add(proxyConnection);
+    private void initConnection() throws ConnectException {
+        while (!addBagItem());
     }
 
     public Connection getConnection() throws SQLException {
@@ -71,15 +73,19 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     }
 
     @Override
-    public MyProxyConnection addBagItem() {
-        MyProxyConnection conn = null;
+    public Boolean addBagItem() {
         try {
-            Connection connection = source.getConnection();
-            conn = new MyProxyConnection(connection, this.bag);
+            if (totalConnections.get() < config.getMaxPoolSize()) {
+                totalConnections.incrementAndGet();
+                System.out.println("开始创建连接,此时线程为 -> " + Thread.currentThread().getName() + "，此时总数为 -> " + totalConnections.get());
+                Connection connection = source.getConnection();
+                this.bag.add(new MyProxyConnection(connection, this.bag));
+                return Boolean.TRUE;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return conn;
+        return Boolean.FALSE;
     }
 
     public void shutdown() {

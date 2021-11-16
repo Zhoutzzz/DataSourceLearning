@@ -21,12 +21,14 @@ import per.zhoutzzz.datasource.PoolConfig;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhoutzzz
  */
 
 public class DataSourceTest {
+    final AtomicInteger i = new AtomicInteger(0);
 
     public static void main(String[] args) throws Exception {
         PoolConfig.PoolConfigBuilder config = PoolConfig.builder();
@@ -39,9 +41,11 @@ public class DataSourceTest {
 
         MyDataSource myDataSource = new MyDataSource(config.build());
 
+        DataSourceTest dataSourceTest = new DataSourceTest();
         for (int i = 0; i < 20; i++) {
             new Thread(new Task(myDataSource)).start();
         }
+        System.out.println("线程创建完成");
     }
 
 //    public static void main(String[] args) throws Exception {

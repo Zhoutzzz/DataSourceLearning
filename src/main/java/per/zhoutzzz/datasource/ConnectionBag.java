@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,9 +43,7 @@ public class ConnectionBag {
 
     private final AtomicBoolean shutdownStatus = new AtomicBoolean(false);
 
-    private final ArrayBlockingQueue<MyProxyConnection> activeLinkQueue;
-
-    private final ArrayBlockingQueue<MyProxyConnection> idleLinkQueue;
+    private final CopyOnWriteArrayList<MyProxyConnection> connectioinList;
 
     private final BagConnectionListener listener;
 
@@ -62,39 +61,36 @@ public class ConnectionBag {
         int poolMinIdle = Objects.isNull(maxPoolSize) ? DEFAULT_IDLE_SIZE : minIdle;
         poolActiveSize = Objects.isNull(maxPoolSize) ? DEFAULT_MAX_SIZE : maxPoolSize;
         this.listener = listener;
-        this.activeLinkQueue = new ArrayBlockingQueue<>(poolActiveSize);
-        this.idleLinkQueue = new ArrayBlockingQueue<>(poolMinIdle);
+        this.connectioinList = new CopyOnWriteArrayList<>();
     }
 
     public Connection borrow(long timeout, TimeUnit unit) throws SQLException {
         MyProxyConnection conn = null;
-        if (allConnectionSize.get() < poolActiveSize && idleLinkQueue.isEmpty()) {
-            conn = listener.addBagItem();
-            allConnectionSize.incrementAndGet();
-            while (!activeLinkQueue.offer(conn)) ;
-        } else if (idleLinkQueue.isEmpty()) {
-            return null;
-        } else {
-            try {
-                conn = idleLinkQueue.poll(timeout, unit);
-            } catch (Exception e) {
-                e.printStackTrace();
+        long startTime = System.nanoTime();
+        waiters.incrementAndGet();
+        do {
+            if (connectioinList.size() > 0) {
+                try {
+                    conn = connectioinList.remove(connectioinList.size() - 1);
+                } catch (Exception e) {
+                    continue;
+                }
             }
-        }
+            if (waiters.get() > 1) {
+                listener.addBagItem();
+            }
+            timeout = unit.toNanos(timeout) - (System.nanoTime() - startTime);
+        } while (timeout > 10_000L);
+        waiters.decrementAndGet();
         return conn;
     }
 
     public void requite(MyProxyConnection connection) {
-        boolean isRemove;
-        do {
-            isRemove = activeLinkQueue.remove(connection);
-        }
-        while (!isRemove);
-        idleLinkQueue.offer(connection);
+        connectioinList.add(connection);
     }
 
-    void add(MyProxyConnection conn) throws ConnectException {
-        idleLinkQueue.add(conn);
+    void add(MyProxyConnection conn) {
+        connectioinList.add(conn);
     }
 
     public void clean() {
@@ -105,13 +101,10 @@ public class ConnectionBag {
                 while (!shutdownStatus.compareAndSet(false, true)) {
                     log.info("shutdown");
                 }
-                for (MyProxyConnection proxyConnection : idleLinkQueue) {
+                for (MyProxyConnection proxyConnection : connectioinList) {
                     proxyConnection.remove();
                 }
-                idleLinkQueue.clear();
-                while (activeLinkQueue.size() > 0) {
-                    log.info("waiting active connection close");
-                }
+                connectioinList.clear();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -123,6 +116,6 @@ public class ConnectionBag {
     }
 
     public interface BagConnectionListener {
-        MyProxyConnection addBagItem();
+        Boolean addBagItem();
     }
 }

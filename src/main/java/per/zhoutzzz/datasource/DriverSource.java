@@ -68,7 +68,7 @@ public class DriverSource implements DataSource {
 
     @Override
     public Connection getConnection() throws SQLException {
-        System.out.println("创建第" + i.incrementAndGet() + "个连接");
+        System.out.println("线程 -> " + Thread.currentThread().getName() + ",创建第" + i.incrementAndGet() + "个连接");
         return driver.connect(url, variables);
     }
 
