@@ -78,4 +78,8 @@ public class MyDataSource implements DataSource {
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return pool.getSource().isWrapperFor(iface);
     }
+
+    public void close() {
+        pool.shutdown();
+    }
 }

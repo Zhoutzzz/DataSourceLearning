@@ -43,35 +43,29 @@ public class ConnectionBag {
 
     private final AtomicBoolean shutdownStatus = new AtomicBoolean(false);
 
-    private final CopyOnWriteArrayList<MyProxyConnection> connectioinList;
+    private final CopyOnWriteArrayList<MyProxyConnection> connectionList;
 
     private final BagConnectionListener listener;
-
-    private static final Integer DEFAULT_MAX_SIZE = Runtime.getRuntime().availableProcessors();
-
-    private static final Integer DEFAULT_IDLE_SIZE = 1;
-
-    private final int poolActiveSize;
-
-    private final AtomicInteger allConnectionSize = new AtomicInteger(0);
 
     private final AtomicInteger waiters = new AtomicInteger(0);
 
     public ConnectionBag(BagConnectionListener listener, Integer maxPoolSize, Integer minIdle) {
-        int poolMinIdle = Objects.isNull(maxPoolSize) ? DEFAULT_IDLE_SIZE : minIdle;
-        poolActiveSize = Objects.isNull(maxPoolSize) ? DEFAULT_MAX_SIZE : maxPoolSize;
         this.listener = listener;
-        this.connectioinList = new CopyOnWriteArrayList<>();
+        this.connectionList = new CopyOnWriteArrayList<>();
     }
 
     public Connection borrow(long timeout, TimeUnit unit) throws SQLException {
+        if (shutdownStatus.get()) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
         MyProxyConnection conn = null;
         long startTime = System.nanoTime();
         waiters.incrementAndGet();
         do {
-            if (connectioinList.size() > 0) {
+            if (connectionList.size() > 0) {
                 try {
-                    conn = connectioinList.remove(connectioinList.size() - 1);
+                    conn = connectionList.remove(connectionList.size() - 1);
                 } catch (Exception e) {
                     continue;
                 }
@@ -86,11 +80,11 @@ public class ConnectionBag {
     }
 
     public void requite(MyProxyConnection connection) {
-        connectioinList.add(connection);
+        connectionList.add(connection);
     }
 
     void add(MyProxyConnection conn) {
-        connectioinList.add(conn);
+        connectionList.add(conn);
     }
 
     public void clean() {
@@ -99,12 +93,14 @@ public class ConnectionBag {
             b = lock.tryLock(2, SECONDS);
             if (b) {
                 while (!shutdownStatus.compareAndSet(false, true)) {
-                    log.info("shutdown");
+                    System.out.println("shutdown");
                 }
-                for (MyProxyConnection proxyConnection : connectioinList) {
-                    proxyConnection.remove();
+                while (connectionList.size() > 0) {
+                    for (MyProxyConnection proxyConnection : connectionList) {
+                        proxyConnection.remove();
+                    }
+                    connectionList.clear();
                 }
-                connectioinList.clear();
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -44,7 +44,14 @@ public class DataSourceTest {
         for (int i = 0; i < 20; i++) {
             new Thread(new Task(myDataSource)).start();
         }
+
+        try {
+            Thread.sleep(10000L);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("线程创建完成");
+        myDataSource.close();
     }
 
 //    public static void main(String[] args) throws Exception {
@@ -90,13 +97,13 @@ class Task implements Runnable{
                     connection = myDataSource.getConnection();
                 } while (connection == null && ++count < 3);
                 if (count == 3) {
-                    System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
+//                    System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
                     return;
                 }
                 PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+//                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
                 }
                 connection.close();
                 Thread.yield();
