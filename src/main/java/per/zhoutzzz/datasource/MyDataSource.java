@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 /**
@@ -30,12 +31,17 @@ public class MyDataSource implements DataSource {
 
     private final MyConnectionPool pool;
 
+    private final AtomicBoolean isClose = new AtomicBoolean(false);
+
     public MyDataSource(PoolConfig config) throws Exception {
         this.pool = new MyConnectionPool(config);
     }
 
     @Override
     public Connection getConnection() throws SQLException {
+        if (isClose.get()) {
+            throw new SQLException("DataSource has been closed");
+        }
         return pool.getConnection();
     }
 
@@ -80,6 +86,10 @@ public class MyDataSource implements DataSource {
     }
 
     public void close() {
+        if (isClose.getAndSet(true)) {
+            return;
+        }
         pool.shutdown();
+        System.out.println("close DataSource");
     }
 }
