@@ -23,7 +23,7 @@ import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -40,6 +40,10 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private PoolConfig config;
 
+    private final ExecutorService connectionCreator = Executors.newSingleThreadExecutor();
+
+    private final ConnectionCreator createTask = new ConnectionCreator();
+
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
@@ -49,7 +53,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     }
 
     private void initConnection() throws ConnectException {
-        while (!addBagItem());
+        while (!addBagItem()) ;
     }
 
     public Connection getConnection() throws SQLException {
@@ -78,11 +82,14 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
             if (totalConnections.get() < config.getMaxPoolSize()) {
                 totalConnections.incrementAndGet();
                 System.out.println("开始创建连接,此时线程为 -> " + Thread.currentThread().getName() + "，此时总数为 -> " + totalConnections.get());
+                Future<MyProxyConnection> submit = connectionCreator.submit(createTask);
+                if (submit.isDone()) {
+                    this.bag.add(new MyProxyConnection(submit.get(), this.bag));
+                }
                 Connection connection = source.getConnection();
-                this.bag.add(new MyProxyConnection(connection, this.bag));
                 return Boolean.TRUE;
             }
-        } catch (SQLException e) {
+        } catch (InterruptedException | ExecutionException | SQLException e) {
             e.printStackTrace();
         }
         return Boolean.FALSE;
@@ -90,5 +97,13 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     public void shutdown() {
         this.bag.clean();
+    }
+
+    private class ConnectionCreator implements Callable<MyProxyConnection> {
+
+        @Override
+        public MyProxyConnection call() throws Exception {
+            return new MyProxyConnection(source.getConnection(), bag);
+        }
     }
 }
