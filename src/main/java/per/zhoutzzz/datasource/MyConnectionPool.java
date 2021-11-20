@@ -40,7 +40,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private PoolConfig config;
 
-    private final ExecutorService connectionCreator = Executors.newSingleThreadExecutor();
+    private final ExecutorService connectionCreator = createThreadExecutor();
 
     private final ConnectionCreator createTask = new ConnectionCreator();
 
@@ -97,6 +97,14 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     public void shutdown() {
         this.bag.clean();
+    }
+
+    private static ExecutorService createThreadExecutor() {
+        return new ThreadPoolExecutor(1, 1, 3000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
+            Thread thread = new Thread(r, "create-connection-thread");
+            thread.setDaemon(true);
+            return thread;
+        }, new ThreadPoolExecutor.DiscardPolicy());
     }
 
     private class ConnectionCreator implements Callable<MyProxyConnection> {

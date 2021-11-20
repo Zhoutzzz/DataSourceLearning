@@ -37,12 +37,12 @@ public class MyProxyConnection implements Connection, Closeable {
 
     private final ConnectionBag bag;
 
+    private static final Executor TIME_OUT_EXECUTOR = Executors.newSingleThreadExecutor();
+
     public MyProxyConnection(Connection currentConnection, ConnectionBag bag) {
         this.currentConnection = currentConnection;
         this.bag = bag;
     }
-
-    private static final Executor TIME_OUT_EXECUTOR = Executors.newSingleThreadExecutor();
 
     @Override
     public Statement createStatement() throws SQLException {

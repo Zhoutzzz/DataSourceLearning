@@ -18,16 +18,12 @@ package per.zhoutzzz.datasource;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Objects;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -74,7 +70,7 @@ public class ConnectionBag {
                 listener.addBagItem();
             }
             timeout = unit.toNanos(timeout) - (System.nanoTime() - startTime);
-        } while (timeout > 10_000L);
+        } while (timeout > 0);
         waiters.decrementAndGet();
         return conn;
     }
