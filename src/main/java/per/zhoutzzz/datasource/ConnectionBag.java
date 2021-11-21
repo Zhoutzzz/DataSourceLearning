@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -108,6 +109,6 @@ public class ConnectionBag {
     }
 
     public interface BagConnectionListener {
-        Boolean addBagItem();
+        Future<Boolean> addBagItem();
     }
 }

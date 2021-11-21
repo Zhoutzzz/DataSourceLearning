@@ -52,8 +52,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.initConnection();
     }
 
-    private void initConnection() throws ConnectException {
-        while (!addBagItem()) ;
+    private void initConnection() {
+        addBagItem();
     }
 
     public Connection getConnection() throws SQLException {
@@ -77,22 +77,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     }
 
     @Override
-    public Boolean addBagItem() {
-        try {
-            if (totalConnections.get() < config.getMaxPoolSize()) {
-                totalConnections.incrementAndGet();
-                System.out.println("开始创建连接,此时线程为 -> " + Thread.currentThread().getName() + "，此时总数为 -> " + totalConnections.get());
-                Future<MyProxyConnection> submit = connectionCreator.submit(createTask);
-                if (submit.isDone()) {
-                    this.bag.add(new MyProxyConnection(submit.get(), this.bag));
-                }
-                Connection connection = source.getConnection();
-                return Boolean.TRUE;
-            }
-        } catch (InterruptedException | ExecutionException | SQLException e) {
-            e.printStackTrace();
-        }
-        return Boolean.FALSE;
+    public Future<Boolean> addBagItem() {
+        return connectionCreator.submit(createTask);
     }
 
     public void shutdown() {
@@ -107,11 +93,25 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         }, new ThreadPoolExecutor.DiscardPolicy());
     }
 
-    private class ConnectionCreator implements Callable<MyProxyConnection> {
+    private class ConnectionCreator implements Callable<Boolean> {
 
         @Override
-        public MyProxyConnection call() throws Exception {
-            return new MyProxyConnection(source.getConnection(), bag);
+        public Boolean call() throws Exception {
+            Connection newConn = null;
+            try {
+                if (totalConnections.get() < config.getMaxPoolSize()) {
+                    totalConnections.incrementAndGet();
+                    System.out.println("开始创建连接,此时线程为 -> " + Thread.currentThread().getName() + "，此时总数为 -> " + totalConnections.get());
+                    newConn = source.getConnection();
+                    bag.add(new MyProxyConnection(newConn, bag));
+                    return Boolean.TRUE;
+                }
+            } catch (SQLException e) {
+                if (newConn != null) {
+                    newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5);
+                }
+            }
+            return Boolean.FALSE;
         }
     }
 }
