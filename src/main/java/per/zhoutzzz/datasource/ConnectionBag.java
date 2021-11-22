@@ -20,6 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -108,7 +111,30 @@ public class ConnectionBag {
         }
     }
 
+    public Collection<MyProxyConnection> values(final int state) {
+        List<MyProxyConnection> result = new ArrayList<>(connectionList.size());
+        for (final MyProxyConnection entry : connectionList) {
+            if (entry.getState() == state) {
+                result.add(entry);
+            }
+        }
+
+        return result;
+    }
+
     public interface BagConnectionListener {
         Future<Boolean> addBagItem();
+    }
+
+    public interface ConnectionState {
+        int REMOVE_STATE = -1;
+        int NOT_USE_STATE = 0;
+        int USE_STATE = 1;
+        int RESERVE_STATE = 2;
+        void compareAndSet(int expect, int newValue);
+
+        void lazySet(int value);
+
+        int getState();
     }
 }

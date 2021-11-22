@@ -23,6 +23,7 @@ import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.util.Collection;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -108,10 +109,29 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 }
             } catch (SQLException e) {
                 if (newConn != null) {
-                    newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5);
+                    newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5000);
                 }
             }
             return Boolean.FALSE;
+        }
+    }
+
+    private class KeepAliveTask implements Runnable {
+
+        @Override
+        public void run() {
+            Collection<MyProxyConnection> idleConnList = bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE);
+            int removable = idleConnList.size() - config.getMinIdle();
+            if (removable <= 0) {
+                return;
+            }
+            for (MyProxyConnection curConn : idleConnList) {
+                idleConnList.remove(curConn);
+                curConn.close();
+                if (--removable <= 0) {
+                    return;
+                }
+            }
         }
     }
 }

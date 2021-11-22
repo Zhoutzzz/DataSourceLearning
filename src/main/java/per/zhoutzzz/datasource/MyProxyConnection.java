@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -31,7 +32,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @author zhoutzzz
  */
 @RequiredArgsConstructor
-public class MyProxyConnection implements Connection, Closeable {
+public class MyProxyConnection implements ConnectionBag.ConnectionState, Connection, Closeable {
+
+    private AtomicInteger state = new AtomicInteger(0);
 
     private Connection currentConnection;
 
@@ -320,5 +323,20 @@ public class MyProxyConnection implements Connection, Closeable {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
+    }
+
+    @Override
+    public void compareAndSet(int expect, int newValue) {
+        this.state.compareAndSet(expect, newValue);
+    }
+
+    @Override
+    public void lazySet(int value) {
+        this.state.lazySet(value);
+    }
+
+    @Override
+    public int getState() {
+        return this.state.get();
     }
 }
