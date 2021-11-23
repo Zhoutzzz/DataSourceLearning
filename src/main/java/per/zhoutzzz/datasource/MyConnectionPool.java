@@ -19,8 +19,8 @@ package per.zhoutzzz.datasource;
 import lombok.RequiredArgsConstructor;
 
 import javax.sql.DataSource;
-import java.net.ConnectException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.util.Collection;
@@ -42,6 +42,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     private PoolConfig config;
 
     private final ExecutorService connectionCreator = createThreadExecutor();
+    private final ScheduledExecutorService KeepAliveExecutor = new ScheduledThreadPoolExecutor(1);
 
     private final ConnectionCreator createTask = new ConnectionCreator();
 
@@ -50,6 +51,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
         this.totalConnections = new AtomicInteger(0);
+        KeepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), 0, 30, TimeUnit.SECONDS);
         this.initConnection();
     }
 
@@ -130,6 +132,13 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 curConn.close();
                 if (--removable <= 0) {
                     return;
+                }
+            }
+            for (MyProxyConnection each : idleConnList) {
+                try (PreparedStatement statement = each.prepareStatement("select 1")) {
+                    statement.execute();
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
             }
         }

@@ -283,7 +283,7 @@ public class MyProxyConnection implements ConnectionBag.ConnectionState, Connect
 
     @Override
     public void setSchema(String schema) throws SQLException {
-
+        currentConnection.setSchema(schema);
     }
 
     @Override
@@ -298,7 +298,7 @@ public class MyProxyConnection implements ConnectionBag.ConnectionState, Connect
 
     @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-
+        currentConnection.setNetworkTimeout(executor, milliseconds);
     }
 
     @Override
