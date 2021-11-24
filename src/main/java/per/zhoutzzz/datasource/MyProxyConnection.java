@@ -326,8 +326,8 @@ public class MyProxyConnection implements ConnectionBag.ConnectionState, Connect
     }
 
     @Override
-    public void compareAndSet(int expect, int newValue) {
-        this.state.compareAndSet(expect, newValue);
+    public boolean compareAndSet(int expect, int newValue) {
+        return this.state.compareAndSet(expect, newValue);
     }
 
     @Override

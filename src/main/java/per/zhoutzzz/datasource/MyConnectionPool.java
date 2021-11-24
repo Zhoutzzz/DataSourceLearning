@@ -122,6 +122,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
         @Override
         public void run() {
+            System.out.println("开始处理空闲线程");
             Collection<MyProxyConnection> idleConnList = bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE);
             int removable = idleConnList.size() - config.getMinIdle();
             if (removable <= 0) {

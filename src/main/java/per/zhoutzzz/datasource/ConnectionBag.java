@@ -56,8 +56,7 @@ public class ConnectionBag {
 
     public Connection borrow(long timeout, TimeUnit unit) throws SQLException {
         if (shutdownStatus.get()) {
-            Thread.currentThread().interrupt();
-            return null;
+            throw new SQLException("连接池已经关闭");
         }
         MyProxyConnection conn = null;
         long startTime = System.nanoTime();
@@ -66,6 +65,10 @@ public class ConnectionBag {
             if (connectionList.size() > 0) {
                 try {
                     conn = connectionList.remove(connectionList.size() - 1);
+                    boolean b = conn.compareAndSet(ConnectionState.NOT_USE_STATE, ConnectionState.USE_STATE);
+                    if (!b) {
+                        continue;
+                    }
                 } catch (Exception e) {
                     continue;
                 }
@@ -80,10 +83,14 @@ public class ConnectionBag {
     }
 
     public void requite(MyProxyConnection connection) {
+        while (!connection.compareAndSet(ConnectionState.USE_STATE, ConnectionState.NOT_USE_STATE)) {
+            System.out.println("正在归还连接");
+        }
         connectionList.add(connection);
     }
 
     void add(MyProxyConnection conn) {
+        conn.lazySet(ConnectionState.NOT_USE_STATE);
         connectionList.add(conn);
     }
 
@@ -97,6 +104,7 @@ public class ConnectionBag {
                 }
                 while (connectionList.size() > 0) {
                     for (MyProxyConnection proxyConnection : connectionList) {
+                        proxyConnection.compareAndSet(ConnectionState.NOT_USE_STATE, ConnectionState.REMOVE_STATE);
                         proxyConnection.remove();
                     }
                     connectionList.clear();
@@ -131,7 +139,7 @@ public class ConnectionBag {
         int NOT_USE_STATE = 0;
         int USE_STATE = 1;
         int RESERVE_STATE = 2;
-        void compareAndSet(int expect, int newValue);
+        boolean compareAndSet(int expect, int newValue);
 
         void lazySet(int value);
 
