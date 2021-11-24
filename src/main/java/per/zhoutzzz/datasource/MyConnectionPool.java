@@ -42,7 +42,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     private PoolConfig config;
 
     private final ExecutorService connectionCreator = createThreadExecutor();
-    private final ScheduledExecutorService KeepAliveExecutor = new ScheduledThreadPoolExecutor(1);
+    private final ScheduledExecutorService keepAliveExecutor = new ScheduledThreadPoolExecutor(1);
+    private final ScheduledExecutorService leakExecutor = new ScheduledThreadPoolExecutor(1);
 
     private final ConnectionCreator createTask = new ConnectionCreator();
 
@@ -51,7 +52,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
         this.totalConnections = new AtomicInteger(0);
-        KeepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), 0, 30, TimeUnit.SECONDS);
+        keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), 0, 30, TimeUnit.SECONDS);
+        leakExecutor.scheduleWithFixedDelay(bag::evict, 0, 30, TimeUnit.SECONDS);
         this.initConnection();
     }
 
@@ -129,13 +131,15 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 return;
             }
             for (MyProxyConnection curConn : idleConnList) {
-                idleConnList.remove(curConn);
-                curConn.close();
+                curConn.remove();
                 if (--removable <= 0) {
-                    return;
+                    break;
                 }
             }
             for (MyProxyConnection each : idleConnList) {
+                if (each.getState() == ConnectionBag.ConnectionState.REMOVE_STATE) {
+                    continue;
+                }
                 try (PreparedStatement statement = each.prepareStatement("select 1")) {
                     statement.execute();
                 } catch (SQLException e) {

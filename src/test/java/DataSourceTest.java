@@ -51,7 +51,7 @@ public class DataSourceTest {
             e.printStackTrace();
         }
         System.out.println("线程创建完成");
-        myDataSource.close();
+//        myDataSource.close();
     }
 
 //    public static void main(String[] args) throws Exception {
@@ -90,7 +90,7 @@ class Task implements Runnable{
     @Override
     public void run() {
         int count = 0;
-        while (true) {
+//        while (true) {
             try {
                 Connection connection;
                 do {
@@ -110,6 +110,6 @@ class Task implements Runnable{
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
-        }
+//        }
     }
 }

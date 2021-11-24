@@ -83,10 +83,15 @@ public class ConnectionBag {
     }
 
     public void requite(MyProxyConnection connection) {
-        while (!connection.compareAndSet(ConnectionState.USE_STATE, ConnectionState.NOT_USE_STATE)) {
-            System.out.println("正在归还连接");
+        if (connectionList.contains(connection)) {
+            if (connection.getState() == ConnectionState.USE_STATE) {
+                while (!connection.compareAndSet(ConnectionState.USE_STATE, ConnectionState.NOT_USE_STATE)) {
+                    System.out.println("正在归还连接");
+                }
+            }
+        } else {
+            connectionList.add(connection);
         }
-        connectionList.add(connection);
     }
 
     void add(MyProxyConnection conn) {
@@ -130,6 +135,10 @@ public class ConnectionBag {
         return result;
     }
 
+    public void evict() {
+        connectionList.removeIf(conn -> conn.getState() == ConnectionState.REMOVE_STATE);
+    }
+
     public interface BagConnectionListener {
         Future<Boolean> addBagItem();
     }
@@ -139,6 +148,7 @@ public class ConnectionBag {
         int NOT_USE_STATE = 0;
         int USE_STATE = 1;
         int RESERVE_STATE = 2;
+
         boolean compareAndSet(int expect, int newValue);
 
         void lazySet(int value);

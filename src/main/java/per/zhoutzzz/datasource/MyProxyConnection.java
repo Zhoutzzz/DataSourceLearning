@@ -308,8 +308,11 @@ public class MyProxyConnection implements ConnectionBag.ConnectionState, Connect
 
     void remove() {
         try {
-            this.currentConnection.setNetworkTimeout(TIME_OUT_EXECUTOR, (int) SECONDS.toMillis(10));
-            this.currentConnection = null;
+            if (this.state.get() == NOT_USE_STATE) {
+                this.state.set(REMOVE_STATE);
+                this.currentConnection.setNetworkTimeout(TIME_OUT_EXECUTOR, (int) SECONDS.toMillis(10));
+                this.currentConnection = null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
