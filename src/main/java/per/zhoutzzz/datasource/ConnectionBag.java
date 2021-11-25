@@ -64,7 +64,7 @@ public class ConnectionBag {
         do {
             if (connectionList.size() > 0) {
                 try {
-                    conn = connectionList.remove(connectionList.size() - 1);
+                    conn = connectionList.get(connectionList.size() - 1);
                     boolean b = conn.compareAndSet(ConnectionState.NOT_USE_STATE, ConnectionState.USE_STATE);
                     if (!b) {
                         continue;
@@ -83,14 +83,10 @@ public class ConnectionBag {
     }
 
     public void requite(MyProxyConnection connection) {
-        if (connectionList.contains(connection)) {
-            if (connection.getState() == ConnectionState.USE_STATE) {
-                while (!connection.compareAndSet(ConnectionState.USE_STATE, ConnectionState.NOT_USE_STATE)) {
-                    System.out.println("正在归还连接");
-                }
+        if (connection.getState() == ConnectionState.USE_STATE) {
+            while (!connection.compareAndSet(ConnectionState.USE_STATE, ConnectionState.NOT_USE_STATE)) {
+                System.out.println("正在归还连接");
             }
-        } else {
-            connectionList.add(connection);
         }
     }
 
