@@ -16,7 +16,7 @@
 
 import lombok.RequiredArgsConstructor;
 import per.zhoutzzz.datasource.MyDataSource;
-import per.zhoutzzz.datasource.PoolConfig;
+import per.zhoutzzz.datasource.config.PoolConfig;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

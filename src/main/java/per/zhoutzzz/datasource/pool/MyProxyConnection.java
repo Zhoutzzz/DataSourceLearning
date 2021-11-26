@@ -14,7 +14,7 @@
  * copies or substantial portions of the Software.
  */
 
-package per.zhoutzzz.datasource;
+package per.zhoutzzz.datasource.pool;
 
 import lombok.RequiredArgsConstructor;
 

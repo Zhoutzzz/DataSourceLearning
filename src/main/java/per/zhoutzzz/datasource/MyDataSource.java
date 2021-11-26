@@ -16,6 +16,9 @@
 
 package per.zhoutzzz.datasource;
 
+import per.zhoutzzz.datasource.config.PoolConfig;
+import per.zhoutzzz.datasource.pool.MyConnectionPool;
+
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;

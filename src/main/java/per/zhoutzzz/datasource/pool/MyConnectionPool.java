@@ -14,9 +14,11 @@
  * copies or substantial portions of the Software.
  */
 
-package per.zhoutzzz.datasource;
+package per.zhoutzzz.datasource.pool;
 
 import lombok.RequiredArgsConstructor;
+import per.zhoutzzz.datasource.DriverSource;
+import per.zhoutzzz.datasource.config.PoolConfig;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
