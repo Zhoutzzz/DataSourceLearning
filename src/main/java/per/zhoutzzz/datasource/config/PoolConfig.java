@@ -16,10 +16,8 @@
 
 package per.zhoutzzz.datasource.config;
 
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author zhoutzzz

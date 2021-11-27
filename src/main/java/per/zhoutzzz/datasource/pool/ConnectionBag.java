@@ -17,7 +17,6 @@
 package per.zhoutzzz.datasource.pool;
 
 import lombok.extern.slf4j.Slf4j;
-import per.zhoutzzz.datasource.pool.MyProxyConnection;
 
 import java.sql.Connection;
 import java.sql.SQLException;
