@@ -49,6 +49,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final ConnectionCreator createTask = new ConnectionCreator();
 
+    private final ExecutorService leakTaskExecutor = createThreadExecutor();
+
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
