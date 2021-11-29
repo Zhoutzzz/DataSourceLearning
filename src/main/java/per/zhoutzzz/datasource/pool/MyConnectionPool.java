@@ -44,7 +44,9 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     private PoolConfig config;
 
     private final ExecutorService connectionCreator = createThreadExecutor();
+
     private final ScheduledExecutorService keepAliveExecutor = new ScheduledThreadPoolExecutor(1);
+
     private final ScheduledExecutorService leakExecutor = new ScheduledThreadPoolExecutor(1);
 
     private final ConnectionCreator createTask = new ConnectionCreator();
@@ -57,7 +59,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.config = config;
         this.totalConnections = new AtomicInteger(0);
         keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), 0, 30, TimeUnit.SECONDS);
-        leakExecutor.scheduleWithFixedDelay(bag::evict, 0, 30, TimeUnit.SECONDS);
+        leakExecutor.scheduleWithFixedDelay(new LeakTask(), 0, 30, TimeUnit.SECONDS);
         this.initConnection();
     }
 
@@ -150,6 +152,14 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private class LeakTask implements Runnable {
+
+        @Override
+        public void run() {
+            bag.evict();
         }
     }
 }
