@@ -51,7 +51,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final ConnectionCreator createTask = new ConnectionCreator();
 
-    private final ExecutorService leakTaskExecutor = createThreadExecutor();
+    private final ScheduledExecutorService leakTaskExecutor = new ScheduledThreadPoolExecutor(1);
 
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
@@ -75,6 +75,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         var startTime = System.currentTimeMillis();
         do {
             Connection conn = bag.borrow(timeout, unit);
+            leakTaskExecutor.schedule(createTask, 10, TimeUnit.SECONDS);
             if (conn == null) {
                 continue;
             }
