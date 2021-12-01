@@ -47,11 +47,11 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final ScheduledExecutorService keepAliveExecutor = new ScheduledThreadPoolExecutor(1);
 
-    private final ScheduledExecutorService leakExecutor = new ScheduledThreadPoolExecutor(1);
-
     private final ConnectionCreator createTask = new ConnectionCreator();
 
     private final ScheduledExecutorService leakTaskExecutor = new ScheduledThreadPoolExecutor(1);
+
+    private ScheduledFuture<?> leakFuture;
 
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
@@ -59,7 +59,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.config = config;
         this.totalConnections = new AtomicInteger(0);
         keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), 0, 30, TimeUnit.SECONDS);
-        leakExecutor.scheduleWithFixedDelay(new LeakTask(), 0, 30, TimeUnit.SECONDS);
+        leakFuture = leakTaskExecutor.schedule(new LeakTask(), 0, TimeUnit.SECONDS);
         this.initConnection();
     }
 
@@ -75,7 +75,6 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         var startTime = System.currentTimeMillis();
         do {
             Connection conn = bag.borrow(timeout, unit);
-            leakTaskExecutor.schedule(createTask, 10, TimeUnit.SECONDS);
             if (conn == null) {
                 continue;
             }
@@ -95,6 +94,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     public void shutdown() {
         this.bag.clean();
+        leakFuture.cancel(false);
+        this.leakTaskExecutor.shutdown();
     }
 
     private static ExecutorService createThreadExecutor() {
