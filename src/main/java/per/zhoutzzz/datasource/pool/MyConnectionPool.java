@@ -96,6 +96,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.bag.clean();
         leakFuture.cancel(false);
         this.leakTaskExecutor.shutdown();
+        this.keepAliveExecutor.shutdown();
+        this.connectionCreator.shutdown();
     }
 
     private static ExecutorService createThreadExecutor() {
