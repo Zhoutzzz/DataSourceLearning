@@ -50,7 +50,7 @@ public class MyDataSource implements DataSource {
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
-        return pool.getConnection();
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
