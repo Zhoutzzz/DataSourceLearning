@@ -53,13 +53,15 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private ScheduledFuture<?> leakFuture;
 
+    private static final int INIT_VALUE = 0, INIT_DELAY = 0;
+
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
-        this.totalConnections = new AtomicInteger(0);
-        keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), 0, 30, TimeUnit.SECONDS);
-        leakFuture = leakTaskExecutor.schedule(new LeakTask(), 0, TimeUnit.SECONDS);
+        this.totalConnections = new AtomicInteger(INIT_VALUE);
+        keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), INIT_DELAY, 30, TimeUnit.SECONDS);
+        leakFuture = leakTaskExecutor.schedule(new LeakTask(), INIT_DELAY, TimeUnit.SECONDS);
         this.initConnection();
     }
 
