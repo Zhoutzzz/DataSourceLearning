@@ -49,6 +49,8 @@ public class ConnectionBag {
 
     private final AtomicInteger waiters = new AtomicInteger(0);
 
+    private final static int LOCK_TIMEOUT = 2;
+
     public ConnectionBag(BagConnectionListener listener, Integer maxPoolSize, Integer minIdle) {
         this.listener = listener;
         this.connectionList = new CopyOnWriteArrayList<>();
@@ -98,7 +100,7 @@ public class ConnectionBag {
     public void clean() {
         boolean b = false;
         try {
-            b = lock.tryLock(2, SECONDS);
+            b = lock.tryLock(LOCK_TIMEOUT, SECONDS);
             if (b) {
                 while (!shutdownStatus.compareAndSet(false, true)) {
                     System.out.println("shutdown");
