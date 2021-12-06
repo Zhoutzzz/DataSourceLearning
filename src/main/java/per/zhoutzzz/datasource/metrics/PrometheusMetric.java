@@ -16,15 +16,24 @@
 
 package per.zhoutzzz.datasource.metrics;
 
+import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
 
 /**
  * @author zhoutzzz
  */
 public class PrometheusMetric {
+    private static final CollectorRegistry REGISTRY = new CollectorRegistry();
 
     public void counter() {
-        Counter build = Counter.build("connection-pool.total-connection", "Total connection.").register();
+        Counter build = Counter.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
+        build.inc();
+    }
+
+    public void gauge() {
+        Gauge build = Gauge.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
+        build.startTimer();
         build.inc();
     }
 }
