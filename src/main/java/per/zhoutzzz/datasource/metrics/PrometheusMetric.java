@@ -19,6 +19,7 @@ package per.zhoutzzz.datasource.metrics;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
 
 /**
  * @author zhoutzzz
@@ -35,5 +36,10 @@ public class PrometheusMetric {
         Gauge build = Gauge.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
         build.startTimer();
         build.inc();
+    }
+
+    public void Histogram() {
+        Histogram build = Histogram.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
+        build.startTimer();
     }
 }
