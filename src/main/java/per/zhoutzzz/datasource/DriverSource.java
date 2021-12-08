@@ -18,6 +18,7 @@ package per.zhoutzzz.datasource;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author zhoutzzz
  */
+@Slf4j
 public class DriverSource implements DataSource {
 
     @Setter
@@ -68,7 +70,7 @@ public class DriverSource implements DataSource {
 
     @Override
     public Connection getConnection() throws SQLException {
-        System.out.println("线程 -> " + Thread.currentThread().getName() + ",创建第" + i.incrementAndGet() + "个连接");
+        log.debug("线程 -> {},创建第 {} 个连接", Thread.currentThread().getName(), i.incrementAndGet());
         return driver.connect(url, variables);
     }
 

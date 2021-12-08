@@ -17,6 +17,7 @@
 package per.zhoutzzz.datasource.pool;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Closeable;
 import java.sql.*;
@@ -32,6 +33,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @author zhoutzzz
  */
 @RequiredArgsConstructor
+@Slf4j
 public class MyProxyConnection implements ConnectionBag.ConnectionState, Connection, Closeable {
 
     private AtomicInteger state = new AtomicInteger(0);
@@ -88,6 +90,7 @@ public class MyProxyConnection implements ConnectionBag.ConnectionState, Connect
     }
 
     public void close() {
+        log.info("链接归还");
         bag.requite(this);
     }
 

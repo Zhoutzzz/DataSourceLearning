@@ -41,9 +41,9 @@ public class DataSourceTest {
 
         MyDataSource myDataSource = new MyDataSource(config.build());
 
-        for (int i = 0; i < 200; i++) {
-            new Thread(new Task(myDataSource)).start();
-        }
+        new Thread(new Task(myDataSource)).start();
+//        for (int i = 0; i < 200; i++) {
+//        }
 
         try {
             Thread.sleep(10000L);

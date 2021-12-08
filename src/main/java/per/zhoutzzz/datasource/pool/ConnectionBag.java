@@ -87,7 +87,7 @@ public class ConnectionBag {
     public void requite(MyProxyConnection connection) {
         if (connection.getState() == ConnectionState.USE_STATE) {
             while (!connection.compareAndSet(ConnectionState.USE_STATE, ConnectionState.NOT_USE_STATE)) {
-                System.out.println("正在归还连接");
+                log.debug("正在归还连接");
             }
         }
     }

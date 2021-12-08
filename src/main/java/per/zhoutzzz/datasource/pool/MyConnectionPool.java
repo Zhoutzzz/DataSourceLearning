@@ -17,6 +17,7 @@
 package per.zhoutzzz.datasource.pool;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import per.zhoutzzz.datasource.DriverSource;
 import per.zhoutzzz.datasource.config.PoolConfig;
 
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author zhoutzzz
  */
 @RequiredArgsConstructor
+@Slf4j
 public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final ConnectionBag bag;
@@ -118,7 +120,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
             try {
                 if (totalConnections.get() < config.getMaxPoolSize()) {
                     totalConnections.incrementAndGet();
-                    System.out.println("开始创建连接,此时线程为 -> " + Thread.currentThread().getName() + "，此时总数为 -> " + totalConnections.get());
+                    log.debug("开始创建连接,此时线程为 -> {}，此时总数为 -> {}", Thread.currentThread().getName(), totalConnections.get());
                     newConn = source.getConnection();
                     bag.add(new MyProxyConnection(newConn, bag));
                     return Boolean.TRUE;
@@ -136,7 +138,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
         @Override
         public void run() {
-            System.out.println("开始处理空闲线程");
+            log.debug("开始处理空闲线程");
             Collection<MyProxyConnection> idleConnList = bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE);
             int removable = idleConnList.size() - config.getMinIdle();
             if (removable <= 0) {
