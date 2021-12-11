@@ -122,10 +122,11 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     totalConnections.incrementAndGet();
                     log.debug("开始创建连接,此时线程为 -> {}，此时总数为 -> {}", Thread.currentThread().getName(), totalConnections.get());
                     newConn = source.getConnection();
-                    bag.add(new MyProxyConnection(newConn, bag));
+                    Class<?> proxyConn = this.getClass().getClassLoader().loadClass(MyProxyConnection.class.getPackageName() + ".MyProxyConnection$ByteBuddy");
+                    bag.add((MyProxyConnection) proxyConn.getDeclaredConstructor().newInstance());
                     return Boolean.TRUE;
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 if (newConn != null) {
                     newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5000);
                 }
