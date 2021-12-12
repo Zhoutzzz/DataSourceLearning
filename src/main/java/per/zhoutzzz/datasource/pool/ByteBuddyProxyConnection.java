@@ -17,12 +17,11 @@
 package per.zhoutzzz.datasource.pool;
 
 import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.FixedValue;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 /**
  * @author zhoutzzz
@@ -33,6 +32,8 @@ public class ByteBuddyProxyConnection {
             new ByteBuddy()
                 .subclass(MyProxyConnection.class)
                 .name(MyProxyConnection.class.getPackageName() + ".MyProxyConnection$ByteBuddy")
+                .method(named("toString"))
+                .intercept(FixedValue.nullValue())
                 .make()
                 .saveIn(new File("target/classes"));
         } catch (Exception e) {
