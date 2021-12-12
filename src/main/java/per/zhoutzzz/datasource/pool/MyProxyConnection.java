@@ -34,7 +34,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class MyProxyConnection implements ConnectionBag.ConnectionState, Connection, Closeable {
+public abstract class MyProxyConnection implements ConnectionBag.ConnectionState, Connection, Closeable {
 
     private AtomicInteger state = new AtomicInteger(0);
 
@@ -306,7 +306,7 @@ public class MyProxyConnection implements ConnectionBag.ConnectionState, Connect
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-        return 0;
+        return currentConnection.getNetworkTimeout();
     }
 
     void remove() {
@@ -328,7 +328,7 @@ public class MyProxyConnection implements ConnectionBag.ConnectionState, Connect
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return false;
+        return currentConnection.isWrapperFor(iface);
     }
 
     @Override

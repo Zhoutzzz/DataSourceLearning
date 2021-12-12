@@ -30,17 +30,11 @@ import java.nio.file.Paths;
 public class ByteBuddyProxyConnection {
     public static void main(String[] args) {
         try {
-//            Path pool = Files.createFile(Path.of("src/main/java/per/zhoutzzz/datasource/pool/MyProxyConnection$ByteBuddy.java"));
-            DynamicType.Unloaded<MyProxyConnection> make = new ByteBuddy()
+            new ByteBuddy()
                 .subclass(MyProxyConnection.class)
                 .name(MyProxyConnection.class.getPackageName() + ".MyProxyConnection$ByteBuddy")
-                .make();
-            Object myProxyConnection$ByteBuddy = make
+                .make()
                 .saveIn(new File("target/classes"));
-//            make.load(MyProxyConnection.class.getClassLoader())
-//                .getLoaded()
-//                .getDeclaredConstructors()[0]
-//                .newInstance();
         } catch (Exception e) {
             e.printStackTrace();
         }
