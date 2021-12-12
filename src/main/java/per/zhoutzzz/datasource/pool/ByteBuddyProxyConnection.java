@@ -17,9 +17,11 @@
 package per.zhoutzzz.datasource.pool;
 
 import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.implementation.FixedValue;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.implementation.MethodDelegation;
 
 import java.io.File;
+import java.util.Map;
 
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
@@ -29,11 +31,18 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 public class ByteBuddyProxyConnection {
     public static void main(String[] args) {
         try {
-            new ByteBuddy()
+            Map<TypeDescription, File> toString = new ByteBuddy()
                 .subclass(MyProxyConnection.class)
-                .name(MyProxyConnection.class.getPackageName() + ".MyProxyConnection$ByteBuddy")
+                .name(MyProxyConnection.class.getPackageName() + ".MyProxyConnection_ByteBuddy")
                 .method(named("toString"))
-                .intercept(FixedValue.nullValue())
+                .intercept(MethodDelegation.toConstructor(String.class))
+                .make()
+                .saveIn(new File("target/classes"));
+
+            new ByteBuddy()
+                .redefine(ConnectionFactory.class)
+                .method(named("getConnection"))
+                .intercept(MethodDelegation.toConstructor(Class.forName(toString.keySet().iterator().next().getName())))
                 .make()
                 .saveIn(new File("target/classes"));
         } catch (Exception e) {

@@ -46,7 +46,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 /**
  * @author zhoutzzz
  */
-@RequiredArgsConstructor
 @Slf4j
 public abstract class MyProxyConnection implements ConnectionBag.ConnectionState, Connection, Closeable {
 
