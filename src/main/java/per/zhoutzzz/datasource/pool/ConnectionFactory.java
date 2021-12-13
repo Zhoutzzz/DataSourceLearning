@@ -23,6 +23,6 @@ import java.sql.Connection;
  */
 public final class ConnectionFactory {
     public static MyProxyConnection getConnection(Connection bag, ConnectionBag connection) {
-        throw new RuntimeException("");
+        throw new RuntimeException("需要编译生成代理才能使用");
     }
 }
