@@ -33,7 +33,7 @@ public class ByteBuddyProxyConnection {
         try {
             Map<TypeDescription, File> toString = new ByteBuddy()
                 .subclass(MyProxyConnection.class)
-                .name(MyProxyConnection.class.getPackageName() + ".MyProxyConnection$$ByteBuddy")
+                .name(MyProxyConnection.class.getPackageName() + ".MyProxyConnection_ByteBuddy")
                 .method(named("toString"))
                 .intercept(MethodDelegation.toConstructor(String.class))
                 .make()
