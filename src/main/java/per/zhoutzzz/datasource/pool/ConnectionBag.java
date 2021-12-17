@@ -68,8 +68,8 @@ public class ConnectionBag {
                 try {
                     conn = connectionList.get(connectionList.size() - 1);
                     boolean b = conn.compareAndSet(ConnectionState.NOT_USE_STATE, ConnectionState.USE_STATE);
-                    if (!b) {
-                        continue;
+                    if (b) {
+                        break;
                     }
                 } catch (Exception e) {
                     continue;
