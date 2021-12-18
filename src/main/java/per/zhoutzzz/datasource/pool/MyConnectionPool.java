@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import per.zhoutzzz.datasource.DriverSource;
 import per.zhoutzzz.datasource.config.PoolConfig;
+import per.zhoutzzz.datasource.leak.LeakDetectionTask;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -51,9 +52,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final ConnectionCreator createTask = new ConnectionCreator();
 
-    private final ScheduledExecutorService leakTaskExecutor = new ScheduledThreadPoolExecutor(1);
-
-    private ScheduledFuture<?> leakFuture;
+    private LeakDetectionTask leakTask;
 
     private static final int INIT_VALUE = 0, INIT_DELAY = 0;
 
@@ -62,8 +61,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
         this.totalConnections = new AtomicInteger(INIT_VALUE);
-        keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), INIT_DELAY, 30, TimeUnit.SECONDS);
-        leakFuture = leakTaskExecutor.schedule(new LeakTask(), INIT_DELAY, TimeUnit.SECONDS);
+        keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), INIT_DELAY, 30000, TimeUnit.MILLISECONDS);
+        this.leakTask = new LeakDetectionTask(Executors.newScheduledThreadPool(1), 1000);
         this.initConnection();
     }
 
@@ -98,8 +97,6 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     public void shutdown() {
         this.bag.clean();
-        leakFuture.cancel(false);
-        this.leakTaskExecutor.shutdown();
         this.keepAliveExecutor.shutdown();
         this.connectionCreator.shutdown();
     }
@@ -123,6 +120,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     log.debug("开始创建连接,此时线程为 -> {}，此时总数为 -> {}", Thread.currentThread().getName(), totalConnections.get());
                     newConn = source.getConnection();
                     bag.add(ConnectionFactory.getConnection(newConn, bag));
+                    leakTask = leakTask.schedule();
                     return Boolean.TRUE;
                 }
             } catch (Exception e) {
@@ -147,6 +145,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
             for (MyProxyConnection curConn : idleConnList) {
                 curConn.remove();
                 if (--removable <= 0) {
+                    leakTask.cancel();
                     break;
                 }
             }
@@ -160,14 +159,6 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    private class LeakTask implements Runnable {
-
-        @Override
-        public void run() {
-            bag.evict();
         }
     }
 }
