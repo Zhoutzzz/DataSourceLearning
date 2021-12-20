@@ -17,6 +17,7 @@
 package per.zhoutzzz.datasource.leak;
 
 import lombok.extern.slf4j.Slf4j;
+import per.zhoutzzz.datasource.pool.MyProxyConnection;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,7 +47,8 @@ public class LeakDetectionTask implements Runnable {
         this.threshold = threshold;
     }
 
-    public LeakDetectionTask schedule() {
+    public LeakDetectionTask schedule(MyProxyConnection connection) {
+        this.connectionName = connection.toString();
         return new LeakDetectionTask("xxx", this);
     }
 

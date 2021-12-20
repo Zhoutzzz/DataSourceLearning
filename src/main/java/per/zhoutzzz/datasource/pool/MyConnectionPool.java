@@ -119,8 +119,9 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     totalConnections.incrementAndGet();
                     log.debug("开始创建连接,此时线程为 -> {}，此时总数为 -> {}", Thread.currentThread().getName(), totalConnections.get());
                     newConn = source.getConnection();
-                    bag.add(ConnectionFactory.getConnection(newConn, bag));
-                    leakTask = leakTask.schedule();
+                    MyProxyConnection connection = ConnectionFactory.getConnection(newConn, bag);
+                    bag.add(connection);
+                    leakTask = leakTask.schedule(connection);
                     return Boolean.TRUE;
                 }
             } catch (Exception e) {
