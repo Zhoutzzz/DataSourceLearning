@@ -48,8 +48,14 @@ public class LeakDetectionTask implements Runnable {
     }
 
     public LeakDetectionTask schedule(MyProxyConnection connection) {
-        this.connectionName = connection.toString();
-        return new LeakDetectionTask("xxx", this);
+        LeakDetectionTask leakDetectionTask = null;
+        try {
+            this.connectionName = connection.getClientInfo().entrySet().iterator().next().getValue().toString();
+            leakDetectionTask = new LeakDetectionTask(connectionName, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return leakDetectionTask;
     }
 
     public void cancel() {
