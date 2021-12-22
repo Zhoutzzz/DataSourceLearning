@@ -64,6 +64,6 @@ public class LeakDetectionTask implements Runnable {
 
     @Override
     public void run() {
-        log.warn("检测到泄露的连接" + connectionName);
+        log.debug("检测到泄露的连接" + connectionName);
     }
 }
