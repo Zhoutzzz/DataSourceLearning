@@ -55,7 +55,7 @@ public class LeakDetectionTask implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return leakDetectionTask;
+        return leakDetectionTask == null ? this : leakDetectionTask;
     }
 
     public void cancel() {
