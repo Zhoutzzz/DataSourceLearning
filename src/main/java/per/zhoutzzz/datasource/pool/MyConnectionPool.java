@@ -129,6 +129,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     newConn = source.getConnection();
                     MyProxyConnection connection = ConnectionFactory.getConnection(newConn, bag);
                     bag.add(connection);
+                    leakTask.setThreshold(config.getLeakThreshold());
                     leakTask = leakTask.schedule(connection);
                     return Boolean.TRUE;
                 }

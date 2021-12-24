@@ -58,6 +58,10 @@ public class LeakDetectionTask implements Runnable {
         return leakDetectionTask == null ? this : leakDetectionTask;
     }
 
+    public void setThreshold(int leakThreshold) {
+        this.threshold = leakThreshold;
+    }
+
     public void cancel() {
         leakTaskFuture.cancel(false);
     }

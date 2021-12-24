@@ -38,4 +38,6 @@ public class PoolConfig {
     private Long connectionTimeoutMills;
 
     private Long idleTimeout;
+
+    private Integer leakThreshold;
 }
