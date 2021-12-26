@@ -97,13 +97,13 @@ class Task implements Runnable{
                     connection = myDataSource.getConnection();
                 } while (connection == null && ++count < 3);
                 if (count == 3) {
-//                    System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
+                    System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
                     return;
                 }
                 PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-//                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
                 }
                 connection.close();
                 Thread.yield();
