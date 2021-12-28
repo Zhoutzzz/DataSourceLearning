@@ -41,6 +41,5 @@ public class PrometheusMetric {
     public void Histogram() {
         Histogram build = Histogram.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
         build.startTimer();
-        build.labels("qwe", "asd");
     }
 }

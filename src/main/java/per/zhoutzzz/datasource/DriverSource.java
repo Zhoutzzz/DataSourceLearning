@@ -78,7 +78,7 @@ public class DriverSource implements DataSource {
     public Connection getConnection(String username, String password) throws SQLException {
         Properties cloned = (Properties)this.variables.clone();
         if (username != null) {
-            cloned.put("user", username);
+            cloned.put("username", username);
             if (cloned.containsKey("username")) {
                 cloned.put("username", username);
             }
