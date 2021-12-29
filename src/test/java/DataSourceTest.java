@@ -31,6 +31,11 @@ public class DataSourceTest {
     final AtomicInteger i = new AtomicInteger(0);
 
     public static void main(String[] args) throws Exception {
+        MyDataSource myDataSource = createDs();
+        testClose(myDataSource);
+    }
+
+    private static MyDataSource createDs() throws Exception {
         PoolConfig.PoolConfigBuilder config = PoolConfig.builder();
         config.username("root");
         config.password("root");
@@ -39,8 +44,10 @@ public class DataSourceTest {
         config.minIdle(4);
         config.connectionTimeoutMills(3000L);
 
-        MyDataSource myDataSource = new MyDataSource(config.build());
+        return new MyDataSource(config.build());
+    }
 
+    private static void testClose(MyDataSource myDataSource) {
         for (int i = 0; i < 200; i++) {
             new Thread(new Task(myDataSource)).start();
         }
@@ -51,7 +58,7 @@ public class DataSourceTest {
             e.printStackTrace();
         }
         System.out.println("线程创建完成");
-//        myDataSource.close();
+        myDataSource.close();
     }
 
 //    public static void main(String[] args) throws Exception {
