@@ -75,7 +75,12 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     }
 
     private void initConnection() {
-        addBagItem();
+        try {
+            addBagItem().get();
+        } catch (Exception e) {
+            this.shutdown();
+            e.printStackTrace();
+        }
     }
 
     public Connection getConnection() throws SQLException {
@@ -137,6 +142,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 if (newConn != null) {
                     newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5000);
                 }
+                throw e;
             }
             return Boolean.FALSE;
         }
