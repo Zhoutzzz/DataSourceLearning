@@ -58,6 +58,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final ScheduledExecutorService keepAliveExecutor = new ScheduledThreadPoolExecutor(1);
 
+    private final ScheduledExecutorService leakTaskExecutor = new ScheduledThreadPoolExecutor(1);
+
     private final ConnectionCreator createTask = new ConnectionCreator();
 
     private LeakDetectionTask leakTask;
@@ -70,7 +72,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.config = config;
         this.totalConnections = new AtomicInteger(INIT_VALUE);
         keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), INIT_DELAY, 30000, TimeUnit.MILLISECONDS);
-        this.leakTask = new LeakDetectionTask(Executors.newScheduledThreadPool(1), 1000);
+        this.leakTask = new LeakDetectionTask(leakTaskExecutor, 1000);
         this.initConnection();
     }
 
@@ -111,7 +113,32 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     public void shutdown() {
         this.bag.clean();
         this.keepAliveExecutor.shutdown();
+        System.out.println(keepAliveExecutor.isShutdown());
+        try {
+            System.out.println(keepAliveExecutor.awaitTermination(1, TimeUnit.SECONDS));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(keepAliveExecutor.isTerminated());
+
         this.connectionCreator.shutdown();
+        try {
+            System.out.println(connectionCreator.awaitTermination(1, TimeUnit.SECONDS));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(connectionCreator.isShutdown());
+        System.out.println(connectionCreator.isTerminated());
+
+        leakTaskExecutor.shutdown();
+        try {
+            leakTask.cancel();
+            System.out.println(leakTaskExecutor.awaitTermination(1, TimeUnit.SECONDS));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(leakTaskExecutor.isShutdown());
+        System.out.println(leakTaskExecutor.isTerminated());
     }
 
     private static ExecutorService createThreadExecutor() {
