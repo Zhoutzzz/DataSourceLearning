@@ -16,6 +16,7 @@
 
 package per.zhoutzzz.datasource;
 
+import lombok.extern.slf4j.Slf4j;
 import per.zhoutzzz.datasource.config.PoolConfig;
 import per.zhoutzzz.datasource.pool.MyConnectionPool;
 
@@ -30,6 +31,7 @@ import java.util.logging.Logger;
 /**
  * @author zhoutzzz
  */
+@Slf4j
 public class MyDataSource implements DataSource {
 
     private final MyConnectionPool pool;
@@ -93,6 +95,6 @@ public class MyDataSource implements DataSource {
             return;
         }
         pool.shutdown();
-        System.out.println("close DataSource");
+        log.info("close DataSource");
     }
 }
