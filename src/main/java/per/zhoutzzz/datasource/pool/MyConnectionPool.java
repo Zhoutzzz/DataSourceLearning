@@ -115,16 +115,19 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         leakTask.cancel();
         try {
             this.keepAliveExecutor.shutdown();
-            while (!keepAliveExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
-                log.info("连接维护器关闭");
+            if (!keepAliveExecutor.awaitTermination(3, TimeUnit.SECONDS)) {
+                this.keepAliveExecutor.shutdownNow();
+                log.info("连接维护器强制关闭");
             }
             this.connectionCreator.shutdown();
-            while (!connectionCreator.awaitTermination(1, TimeUnit.SECONDS)) {
-                log.info("连接创建器关闭");
+            if (!connectionCreator.awaitTermination(3, TimeUnit.SECONDS)) {
+                this.connectionCreator.shutdownNow();
+                log.info("连接创建器强制关闭");
             }
-            leakTaskExecutor.shutdown();
-            while (!leakTaskExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
-                log.info("泄漏检查器关闭");
+            this.leakTaskExecutor.shutdown();
+            if (!leakTaskExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                this.leakTaskExecutor.shutdownNow();
+                log.info("泄漏检查器强制关闭");
             }
         } catch (Exception e) {
             e.printStackTrace();
