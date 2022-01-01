@@ -112,33 +112,23 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     public void shutdown() {
         this.bag.clean();
-        this.keepAliveExecutor.shutdown();
-        System.out.println(keepAliveExecutor.isShutdown());
+        leakTask.cancel();
         try {
-            System.out.println(keepAliveExecutor.awaitTermination(1, TimeUnit.SECONDS));
+            this.keepAliveExecutor.shutdown();
+            while (!keepAliveExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                log.info("连接维护器关闭");
+            }
+            this.connectionCreator.shutdown();
+            while (!connectionCreator.awaitTermination(1, TimeUnit.SECONDS)) {
+                log.info("连接创建器关闭");
+            }
+            leakTaskExecutor.shutdown();
+            while (!leakTaskExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                log.info("泄漏检查器关闭");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(keepAliveExecutor.isTerminated());
-
-        this.connectionCreator.shutdown();
-        try {
-            System.out.println(connectionCreator.awaitTermination(1, TimeUnit.SECONDS));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println(connectionCreator.isShutdown());
-        System.out.println(connectionCreator.isTerminated());
-
-        leakTaskExecutor.shutdown();
-        try {
-            leakTask.cancel();
-            System.out.println(leakTaskExecutor.awaitTermination(1, TimeUnit.SECONDS));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println(leakTaskExecutor.isShutdown());
-        System.out.println(leakTaskExecutor.isTerminated());
     }
 
     private static ExecutorService createThreadExecutor() {
