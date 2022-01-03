@@ -66,7 +66,7 @@ public class DataSourceTest {
 //                    }
 //                }
 //
-                // mysql
+////                 mysql
 //                preparedStatement1.setInt(1, sc.nextInt());
 //                ResultSet resultSet1 = preparedStatement1.executeQuery();
 //                while (resultSet1.next()) {
@@ -92,6 +92,7 @@ public class DataSourceTest {
         config.maxPoolSize(10);
         config.minIdle(4);
         config.connectionTimeoutMills(3000L);
+        config.leakThreshold(10000);
 
         return new MyDataSource(config.build());
     }
@@ -109,7 +110,7 @@ public class DataSourceTest {
         try {
             Connection connection1 = myDataSource.getConnection();
             PreparedStatement preparedStatement1 = connection1.prepareStatement("select * from tests");
-            preparedStatement1.setInt(1, 1);
+//            preparedStatement1.setInt(1, 1);
             ResultSet resultSet1 = preparedStatement1.executeQuery();
             while (resultSet1.next()) {
                 System.out.println(Thread.currentThread().getName() + "@" + connection1 + " -> " + resultSet1.getObject(1) + ":" + resultSet1.getObject(2));
