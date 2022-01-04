@@ -31,42 +31,42 @@ import java.util.concurrent.atomic.AtomicInteger;
 // shardingsphere函数支持程度
 public class DataSourceTest {
     public static void main(String[] args) throws Exception {
-        MyDataSource myDataSource = createDs();
-        testClose(myDataSource);
-//        HikariDataSource hikariDataSource = new HikariDataSource();
-//        hikariDataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/demo_ds_0?useSSL=false");
-//        hikariDataSource.setUsername("postgres");
-//        hikariDataSource.setPassword("postgres");
-//        HikariDataSource hikariDataSource1 = new HikariDataSource();
-//        hikariDataSource1.setJdbcUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
-//        hikariDataSource1.setUsername("root");
-//        hikariDataSource1.setPassword("root");
-//        try {
-//            Connection connection = hikariDataSource.getConnection();
-//            PreparedStatement preparedStatement = connection.prepareStatement("select * from t_order_0 where user_id = ?");
-//            Connection connection1 = hikariDataSource1.getConnection();
-//            PreparedStatement preparedStatement1 = connection1.prepareStatement("select * from tests where id = ?");
-////            connection.setAutoCommit(false);
-//            Scanner sc = new Scanner(System.in);
-//            while (sc.hasNext()) {
-//                // pg
-//                preparedStatement.setString(1, sc.nextLine());
-//                for (int i = 0; i < 5; i++) {
-//                    System.out.println(i);
-//                    ResultSet resultSet = preparedStatement.executeQuery();
-//                }
-//
-//                connection.prepareStatement("ALTER TABLE t_order_0 ALTER COLUMN user_id TYPE varchar(100);\n").execute();
-//                for (int i = 5; i < 10; i++) {
-//                    System.out.println(i);
-//                    try {
-//                        ResultSet resultSetx = preparedStatement.executeQuery();
-//                    } catch (Exception e) {
-//                        System.out.println(e.getMessage());
-//                    }
-//                }
-//
-////                 mysql
+//        MyDataSource myDataSource = createDs();
+//        testClose(myDataSource);
+        HikariDataSource hikariDataSource = new HikariDataSource();
+        hikariDataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/demo_ds_0?useSSL=false");
+        hikariDataSource.setUsername("postgres");
+        hikariDataSource.setPassword("postgres");
+        HikariDataSource hikariDataSource1 = new HikariDataSource();
+        hikariDataSource1.setJdbcUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
+        hikariDataSource1.setUsername("root");
+        hikariDataSource1.setPassword("root");
+        try {
+            Connection connection = hikariDataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("select * from t_order_0 where user_id = ?");
+            Connection connection1 = hikariDataSource1.getConnection();
+            PreparedStatement preparedStatement1 = connection1.prepareStatement("select * from tests where id = ?");
+//            connection.setAutoCommit(false);
+            Scanner sc = new Scanner(System.in);
+            while (sc.hasNext()) {
+                // pg
+                preparedStatement.setString(1, sc.nextLine());
+                for (int i = 0; i < 5; i++) {
+                    System.out.println(i);
+                    ResultSet resultSet = preparedStatement.executeQuery();
+                }
+
+                connection.prepareStatement("ALTER TABLE t_order_0 ALTER COLUMN user_id TYPE varchar(100);\n").execute();
+                for (int i = 5; i < 10; i++) {
+                    System.out.println(i);
+                    try {
+                        ResultSet resultSetx = preparedStatement.executeQuery();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+
+//                 mysql
 //                preparedStatement1.setInt(1, sc.nextInt());
 //                ResultSet resultSet1 = preparedStatement1.executeQuery();
 //                while (resultSet1.next()) {
@@ -77,10 +77,10 @@ public class DataSourceTest {
 //                while (resultSet1x.next()) {
 //                    System.out.println(Thread.currentThread().getName() + "@" + connection1 + " -> " + resultSet1x.getObject(1) + ":" + resultSet1x.getObject(2));
 //                }
-//            }
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
 
     }
 
