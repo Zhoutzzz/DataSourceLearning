@@ -72,7 +72,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         this.config = config;
         this.totalConnections = new AtomicInteger(INIT_VALUE);
         keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), INIT_DELAY, 30000, TimeUnit.MILLISECONDS);
-        this.leakTask = new LeakDetectionTask(leakTaskExecutor, 1000);
+        this.leakTask = new LeakDetectionTask(leakTaskExecutor, config.getLeakThreshold() == null ? 1000 : config.getLeakThreshold());
         this.initConnection();
     }
 
