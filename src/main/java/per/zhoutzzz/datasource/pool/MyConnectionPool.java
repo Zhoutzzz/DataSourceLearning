@@ -82,7 +82,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
             addBagItem().get();
         } catch (Exception e) {
             this.shutdown();
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -193,7 +193,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 try (PreparedStatement statement = each.prepareStatement("select 1")) {
                     statement.execute();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage());
                 }
             }
         }
