@@ -16,30 +16,25 @@
 
 package per.zhoutzzz.datasource.metrics;
 
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
+import io.prometheus.client.exporter.HTTPServer;
 
 /**
  * @author zhoutzzz
  */
 public class PrometheusMetric {
-    private static final CollectorRegistry REGISTRY = new CollectorRegistry();
 
-    public void counter() {
-        Counter build = Counter.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
-        build.inc();
-    }
-
-    public void gauge() {
-        Gauge build = Gauge.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
-        build.startTimer();
-        build.inc();
-    }
-
-    public void Histogram() {
-        Histogram build = Histogram.build("connection-pool.total-connection", "Total connection.").register(REGISTRY);
-        build.startTimer();
+    public static void main(String[] args) {
+        try {
+            HTTPServer server = new HTTPServer.Builder().withPort(10001)
+                .build();
+            Counter.build("connection_pool_total_connection", "Total connection.").register().inc();
+            Gauge.build("connection_pool_start_time", "Connection Time.").register().startTimer();
+            Histogram.build("connection_pool_histogram", "Connection.").register().startTimer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
