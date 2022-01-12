@@ -19,22 +19,14 @@ package per.zhoutzzz.datasource.metrics;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
-import io.prometheus.client.exporter.HTTPServer;
 
 /**
  * @author zhoutzzz
  */
 public class PrometheusMetric {
-
-    public static void main(String[] args) {
-        try {
-            HTTPServer server = new HTTPServer.Builder().withPort(10001)
-                .build();
-            Counter.build("connection_pool_total_connection", "Total connection.").register().inc();
-            Gauge.build("connection_pool_start_time", "Connection Time.").register().startTimer();
-            Histogram.build("connection_pool_histogram", "Connection.").register().startTimer();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    static{
+        Counter.build("connection_pool_total_connection", "Total connection.").register().inc();
+        Gauge.build("connection_pool_start_time", "Connection Time.").register().startTimer();
+        Histogram.build("connection_pool_histogram", "Connection.").register().startTimer();
     }
 }
