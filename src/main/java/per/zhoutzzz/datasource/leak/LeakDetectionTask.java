@@ -63,7 +63,9 @@ public class LeakDetectionTask implements Runnable {
     }
 
     public void cancel() {
-        leakTaskFuture.cancel(false);
+        if (leakTaskFuture != null) {
+            leakTaskFuture.cancel(true);
+        }
     }
 
     @Override
