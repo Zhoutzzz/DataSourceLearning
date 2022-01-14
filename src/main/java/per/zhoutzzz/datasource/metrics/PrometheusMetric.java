@@ -25,8 +25,14 @@ import io.prometheus.client.Histogram;
  */
 public class PrometheusMetric {
     static{
-        Counter.build("connection_pool_total_connection", "Total connection.").register().inc();
+        counter();
         Gauge.build("connection_pool_start_time", "Connection Time.").register().startTimer();
         Histogram.build("connection_pool_histogram", "Connection.").register().startTimer();
+    }
+
+    public static void counter() {
+        Counter poolCounter = Counter.build("connection_pool_total_connection", "Total connection.").register();
+        poolCounter.inc();
+        poolCounter.labels("poolCounter").incWithExemplar("hahahaha");
     }
 }
