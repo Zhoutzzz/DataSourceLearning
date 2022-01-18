@@ -23,6 +23,7 @@ import net.bytebuddy.implementation.MethodDelegation;
 import java.io.File;
 import java.util.Map;
 
+import static net.bytebuddy.matcher.ElementMatchers.nameMatches;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 /**
@@ -41,7 +42,7 @@ public class ByteBuddyProxyConnection {
 
             new ByteBuddy()
                 .redefine(ConnectionFactory.class)
-                .method(named("getConnection"))
+                .method(nameMatches("getConnection*"))
                 .intercept(MethodDelegation.toConstructor(Class.forName(toString.keySet().iterator().next().getName())))
                 .make()
                 .saveIn(new File("target/classes"));
