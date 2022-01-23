@@ -14,6 +14,7 @@
  * copies or substantial portions of the Software.
  */
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import per.zhoutzzz.datasource.MyDataSource;
@@ -22,6 +23,7 @@ import per.zhoutzzz.datasource.config.PoolConfig;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,10 +32,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 // shardingsphere函数支持程度
 public class DataSourceTest {
-    public static void main(String[] args) throws Exception {
-        MyDataSource myDataSource = createDs();
-        testClose(myDataSource);
-    }
+//    public static void main(String[] args) throws Exception {
+//        MyDataSource myDataSource = createDs();
+//        testClose(myDataSource);
+//    }
 
     private static MyDataSource createDs() throws Exception {
         PoolConfig.PoolConfigBuilder config = PoolConfig.builder();
@@ -73,7 +75,15 @@ public class DataSourceTest {
 
     }
 
-//    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
+        DruidDataSource druid = new DruidDataSource();
+        druid.setUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
+        druid.setUsername("root");
+        druid.setPassword("root");
+//        druid.setDriverClassName("com.mysql.jdbc.driver");
+        try (Connection c = druid.getConnection()) {
+            c.prepareStatement("select 1;").executeQuery();
+        }
 //        HikariConfig hikariConfig = new HikariConfig();
 //        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
 //        hikariConfig.setUsername("root");
@@ -98,7 +108,7 @@ public class DataSourceTest {
 //            }).start();
 //
 //        }
-//    }
+    }
 }
 
 @RequiredArgsConstructor
