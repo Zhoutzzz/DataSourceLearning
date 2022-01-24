@@ -103,7 +103,7 @@ public class ConnectionBag {
             b = lock.tryLock(LOCK_TIMEOUT, SECONDS);
             if (b) {
                 while (!shutdownStatus.compareAndSet(false, true)) {
-                    System.out.println("shutdown");
+                    log.info("shutdown");
                 }
                 while (connectionList.size() > 0) {
                     for (MyProxyConnection proxyConnection : connectionList) {
