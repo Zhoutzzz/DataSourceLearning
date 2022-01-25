@@ -52,6 +52,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private final AtomicInteger totalConnections;
 
+    private static final AtomicInteger THREAD_NUM = new AtomicInteger(0);
+
     private PoolConfig config;
 
     private final ExecutorService connectionCreator = createThreadExecutor();
@@ -137,7 +139,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private static ExecutorService createThreadExecutor() {
         return new ThreadPoolExecutor(1, 1, 3000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
-            Thread thread = new Thread(r, "create-connection-thread");
+            Thread thread = new Thread(r, "create-connection-thread-" + THREAD_NUM.getAndIncrement());
             thread.setDaemon(true);
             return thread;
         }, new ThreadPoolExecutor.DiscardPolicy());
