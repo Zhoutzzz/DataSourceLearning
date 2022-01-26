@@ -193,7 +193,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     continue;
                 }
                 try (PreparedStatement statement = each.prepareStatement("select 1")) {
-                    statement.execute();
+                    statement.executeQuery();
                 } catch (SQLException e) {
                     log.error(e.getMessage());
                 }
