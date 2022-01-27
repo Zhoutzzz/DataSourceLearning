@@ -69,9 +69,10 @@ public class ConnectionBag {
                     conn = connectionList.get(connectionList.size() - 1);
                     boolean b = conn.compareAndSet(ConnectionState.NOT_USE_STATE, ConnectionState.USE_STATE);
                     if (b) {
-                        break;
+                        return conn;
                     }
                 } catch (Exception e) {
+                    log.debug("超时时间内获取连接失败，继续重试");
                     continue;
                 }
             }
