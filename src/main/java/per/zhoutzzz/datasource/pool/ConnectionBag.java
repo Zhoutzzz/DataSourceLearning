@@ -63,14 +63,16 @@ public class ConnectionBag {
         MyProxyConnection conn = null;
         long startTime = System.nanoTime();
         waiters.incrementAndGet();
+        int connIndex = connectionList.size() - 1;
         do {
-            if (connectionList.size() > 0) {
+            if (connIndex > 0) {
                 try {
-                    conn = connectionList.get(connectionList.size() - 1);
+                    conn = connectionList.get(connIndex);
                     boolean b = conn.compareAndSet(ConnectionState.NOT_USE_STATE, ConnectionState.USE_STATE);
                     if (b) {
-                        return conn;
+                        break;
                     }
+                    connIndex--;
                 } catch (Exception e) {
                     log.debug("超时时间内获取连接失败，继续重试");
                     continue;
