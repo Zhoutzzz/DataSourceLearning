@@ -151,8 +151,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         public Boolean call() throws Exception {
             Connection newConn = null;
             try {
-                if (totalConnections.get() < config.getMaxPoolSize()) {
-                    totalConnections.incrementAndGet();
+                if (totalConnections.incrementAndGet() <= config.getMaxPoolSize()) {
                     log.debug("开始创建连接,此时线程为 -> {}，此时总数为 -> {}", Thread.currentThread().getName(), totalConnections.get());
                     newConn = source.getConnection();
                     MyProxyConnection connection = ConnectionFactory.getConnection(newConn, bag);
