@@ -23,10 +23,7 @@ import per.zhoutzzz.datasource.config.PoolConfig;
 import per.zhoutzzz.datasource.leak.LeakDetectionTask;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
+import java.sql.*;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -191,10 +188,14 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 if (each.getState() == ConnectionBag.ConnectionState.REMOVE_STATE) {
                     continue;
                 }
-                try (PreparedStatement statement = each.prepareStatement("select 1")) {
-                    statement.executeQuery();
+                try (PreparedStatement statement = each.prepareStatement("select 1");
+                     ResultSet resultSet = statement.executeQuery()) {
+                    if (!resultSet.next()) {
+                        each.remove();
+                    }
                 } catch (SQLException e) {
                     log.error(e.getMessage());
+                    each.remove();
                 }
             }
         }

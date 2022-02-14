@@ -49,7 +49,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Slf4j
 public abstract class MyProxyConnection implements ConnectionBag.ConnectionState, Connection, Closeable {
 
-    private AtomicInteger state = new AtomicInteger(0);
+    private final AtomicInteger state = new AtomicInteger(0);
 
     private Connection currentConnection;
 
