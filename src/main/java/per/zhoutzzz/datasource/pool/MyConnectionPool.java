@@ -133,7 +133,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 log.info("泄漏检查器强制关闭");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("关闭连接池出现问题, {}", e.getMessage());
         }
     }
 
