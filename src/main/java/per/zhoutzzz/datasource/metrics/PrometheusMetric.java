@@ -16,23 +16,56 @@
 
 package per.zhoutzzz.datasource.metrics;
 
-import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
-import io.prometheus.client.Histogram;
+import io.prometheus.client.*;
+import per.zhoutzzz.datasource.pool.ConnectionBag;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author zhoutzzz
  */
-public class PrometheusMetric {
-    static{
+public class PrometheusMetric extends SimpleCollector<Object> {
+
+    ConnectionBag bag;
+
+    static {
         counter();
         Gauge.build("connection_pool_start_time", "Connection Time.").register().startTimer();
         Histogram.build("connection_pool_histogram", "Connection.").register().startTimer();
     }
 
+    protected PrometheusMetric(Builder b) {
+        super(b);
+    }
+
     public static void counter() {
         Counter poolCounter = Counter.build("connection_pool_total_connection", "Total connection.").register();
-        poolCounter.inc();
-        poolCounter.labels("poolCounter").incWithExemplar("hahahaha");
+        poolCounter.labels("poolCounter").inc();
+    }
+
+    @Override
+    protected Object newChild() {
+        return null;
+    }
+
+//    @Override
+//    public List<MetricFamilySamples> collect() {
+//        return null;
+//    }
+//
+    @Override
+    public List<MetricFamilySamples> collect() {
+        List<MetricFamilySamples> list = new ArrayList<>();
+        List<MetricFamilySamples.Sample> list1 = new ArrayList<>();
+        MetricFamilySamples.Sample sample = new MetricFamilySamples.Sample("activeConnection", new ArrayList<>() {{
+            add("activeConnection");
+        }}, new ArrayList<>() {{
+            add(String.valueOf(bag.values(1).size()));
+        }}, 0.0);
+        list1.add(sample);
+        MetricFamilySamples metricFamilySamples = new MetricFamilySamples("connection_pool_total_connection", Type.COUNTER, "Total connection.", list1);
+        list.add(metricFamilySamples);
+        return list;
     }
 }
