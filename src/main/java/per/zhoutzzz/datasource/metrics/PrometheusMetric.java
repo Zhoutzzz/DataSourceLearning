@@ -61,7 +61,7 @@ public class PrometheusMetric extends SimpleCollector<Object> {
         MetricFamilySamples.Sample sample = new MetricFamilySamples.Sample("activeConnection", new ArrayList<>() {{
             add("activeConnection");
         }}, new ArrayList<>() {{
-            add(String.valueOf(bag.values(1).size()));
+            add(String.valueOf(bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE).size()));
         }}, 0.0);
         list1.add(sample);
         MetricFamilySamples metricFamilySamples = new MetricFamilySamples("connection_pool_total_connection", Type.COUNTER, "Total connection.", list1);
