@@ -49,11 +49,6 @@ public class PrometheusMetric extends SimpleCollector<Object> {
         return null;
     }
 
-//    @Override
-//    public List<MetricFamilySamples> collect() {
-//        return null;
-//    }
-//
     @Override
     public List<MetricFamilySamples> collect() {
         List<MetricFamilySamples> list = new ArrayList<>();
