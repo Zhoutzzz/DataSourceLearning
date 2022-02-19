@@ -23,7 +23,11 @@ import per.zhoutzzz.datasource.config.PoolConfig;
 import per.zhoutzzz.datasource.leak.LeakDetectionTask;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
