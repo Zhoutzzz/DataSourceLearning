@@ -82,7 +82,9 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private void initConnection() {
         try {
-            addBagItem().get();
+            Boolean isCreate = addBagItem().get(3000, TimeUnit.MILLISECONDS);
+            if (!isCreate)
+                log.warn("初始化创建连接失败");
         } catch (Exception e) {
             this.shutdown();
             log.error(e.getMessage());
