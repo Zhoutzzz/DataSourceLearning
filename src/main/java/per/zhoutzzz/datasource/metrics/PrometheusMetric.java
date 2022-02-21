@@ -25,28 +25,21 @@ import java.util.List;
 /**
  * @author zhoutzzz
  */
-public class PrometheusMetric extends SimpleCollector<Object> {
+public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
 
     ConnectionBag bag;
-
-    static {
-        counter();
-        Gauge.build("connection_pool_start_time", "Connection Time.").register().startTimer();
-        Histogram.build("connection_pool_histogram", "Connection.").register().startTimer();
-    }
 
     protected PrometheusMetric(Builder b) {
         super(b);
     }
 
-    public static void counter() {
-        Counter poolCounter = Counter.build("connection_pool_total_connection", "Total connection.").register();
-        poolCounter.labels("poolCounter").inc();
+    public PrometheusMetricBuild build() {
+        return new PrometheusMetricBuild();
     }
 
     @Override
-    protected Object newChild() {
-        return null;
+    protected PrometheusMetric newChild() {
+        return new PrometheusMetric(new PrometheusMetricBuild());
     }
 
     @Override
@@ -62,5 +55,12 @@ public class PrometheusMetric extends SimpleCollector<Object> {
         MetricFamilySamples metricFamilySamples = new MetricFamilySamples("connection_pool_total_connection", Type.COUNTER, "Total connection.", list1);
         list.add(metricFamilySamples);
         return list;
+    }
+
+    static class PrometheusMetricBuild extends Builder<PrometheusMetric.PrometheusMetricBuild, PrometheusMetric> {
+        @Override
+        public PrometheusMetric create() {
+            return new PrometheusMetric(this);
+        }
     }
 }
