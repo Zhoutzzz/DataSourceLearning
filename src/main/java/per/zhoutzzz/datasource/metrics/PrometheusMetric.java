@@ -33,13 +33,13 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
         super(b);
     }
 
-    public PrometheusMetricBuild build() {
+    public static PrometheusMetricBuild build() {
         return new PrometheusMetricBuild();
     }
 
     @Override
     protected PrometheusMetric newChild() {
-        return new PrometheusMetric(new PrometheusMetricBuild());
+        return new PrometheusMetric(PrometheusMetric.build());
     }
 
     @Override
