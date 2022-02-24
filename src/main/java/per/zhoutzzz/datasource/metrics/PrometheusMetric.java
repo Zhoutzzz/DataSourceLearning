@@ -16,7 +16,7 @@
 
 package per.zhoutzzz.datasource.metrics;
 
-import io.prometheus.client.*;
+import io.prometheus.client.SimpleCollector;
 import per.zhoutzzz.datasource.pool.ConnectionBag;
 
 import java.util.ArrayList;
