@@ -29,7 +29,7 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
 
     ConnectionBag bag;
 
-    protected PrometheusMetric(Builder b) {
+    private PrometheusMetric(Builder b) {
         super(b);
     }
 
@@ -39,7 +39,7 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
 
     @Override
     protected PrometheusMetric newChild() {
-        return new PrometheusMetric(PrometheusMetric.build());
+        return PrometheusMetric.build().create();
     }
 
     @Override
