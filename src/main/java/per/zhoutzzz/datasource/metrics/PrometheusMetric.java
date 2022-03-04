@@ -31,6 +31,7 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
 
     private PrometheusMetric(Builder b) {
         super(b);
+        this.register();
     }
 
     public static PrometheusMetricBuild build() {
