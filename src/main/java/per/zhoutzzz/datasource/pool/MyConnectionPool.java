@@ -194,14 +194,12 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 if (each.getState() == ConnectionBag.ConnectionState.REMOVE_STATE) {
                     continue;
                 }
-                try (PreparedStatement statement = each.prepareStatement("select 1");
-                     ResultSet resultSet = statement.executeQuery()) {
-                    if (!resultSet.next()) {
+                try {
+                    if (!each.isValid(10)) {
                         each.remove();
                     }
                 } catch (SQLException e) {
                     log.error(e.getMessage());
-                    each.remove();
                 }
             }
         }
