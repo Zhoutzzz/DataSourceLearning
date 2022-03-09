@@ -21,13 +21,20 @@ import per.zhoutzzz.datasource.pool.ConnectionBag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhoutzzz
  */
 public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
 
-    ConnectionBag bag;
+    private ConnectionBag bag;
+
+    private static final ScheduledExecutorService LABEL_EXECUTOR = new ScheduledThreadPoolExecutor(1, new ThreadPoolExecutor.AbortPolicy());
+    ;
 
     private PrometheusMetric(Builder b) {
         super(b);
@@ -45,17 +52,24 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
 
     @Override
     public List<MetricFamilySamples> collect() {
-        List<MetricFamilySamples> list = new ArrayList<>();
-        List<MetricFamilySamples.Sample> list1 = new ArrayList<>();
+        List<MetricFamilySamples> samples = new ArrayList<>();
+        List<MetricFamilySamples.Sample> sampleItems = new ArrayList<>();
+        List<String> labelValues = new ArrayList<>();
+        labelValues.add(String.valueOf(bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE).size()));
+
+        LABEL_EXECUTOR.scheduleAtFixedRate(() -> {
+            labelValues.clear();
+            String count = String.valueOf(bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE).size());
+            labelValues.add(count);
+        },30000, 30000, TimeUnit.MILLISECONDS);
+
         MetricFamilySamples.Sample sample = new MetricFamilySamples.Sample("activeConnection", new ArrayList<>() {{
             add("active_connection");
-        }}, new ArrayList<>() {{
-            add(String.valueOf(bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE).size()));
-        }}, 1.0);
-        list1.add(sample);
-        MetricFamilySamples metricFamilySamples = new MetricFamilySamples("connection_pool_total_connection", Type.COUNTER, "Total connection.", list1);
-        list.add(metricFamilySamples);
-        return list;
+        }}, labelValues, 1.0);
+        sampleItems.add(sample);
+        MetricFamilySamples metricFamilySamples = new MetricFamilySamples("connection_pool_total_connection", Type.COUNTER, "Total connection.", sampleItems);
+        samples.add(metricFamilySamples);
+        return samples;
     }
 
     static class PrometheusMetricBuild extends Builder<PrometheusMetric.PrometheusMetricBuild, PrometheusMetric> {
