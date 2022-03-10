@@ -21,20 +21,18 @@ import per.zhoutzzz.datasource.pool.ConnectionBag;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @author zhoutzzz
  */
-public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
+public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implements AutoCloseable {
 
     private ConnectionBag bag;
 
     private static final ScheduledExecutorService LABEL_EXECUTOR = new ScheduledThreadPoolExecutor(1, new ThreadPoolExecutor.AbortPolicy());
-    ;
+
+    private Future<?> taskFuture;
 
     private PrometheusMetric(Builder b) {
         super(b);
@@ -57,7 +55,7 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
         List<String> labelValues = new ArrayList<>();
         labelValues.add(String.valueOf(bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE).size()));
 
-        LABEL_EXECUTOR.scheduleAtFixedRate(() -> {
+        taskFuture = LABEL_EXECUTOR.scheduleAtFixedRate(() -> {
             labelValues.clear();
             String count = String.valueOf(bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE).size());
             labelValues.add(count);
@@ -70,6 +68,16 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> {
         MetricFamilySamples metricFamilySamples = new MetricFamilySamples("connection_pool_total_connection", Type.COUNTER, "Total connection.", sampleItems);
         samples.add(metricFamilySamples);
         return samples;
+    }
+
+    @Override
+    public void close() throws Exception {
+        taskFuture.cancel(true);
+
+        LABEL_EXECUTOR.shutdown();
+        if (!LABEL_EXECUTOR.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
+            LABEL_EXECUTOR.shutdownNow();
+        }
     }
 
     static class PrometheusMetricBuild extends Builder<PrometheusMetric.PrometheusMetricBuild, PrometheusMetric> {
