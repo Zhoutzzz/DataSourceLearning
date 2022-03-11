@@ -38,6 +38,8 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implemen
 
     private Future<?> taskFuture;
 
+    private static final int ADD_DELAY = 30000;
+
     private PrometheusMetric(Builder b) {
         super(b);
         this.register();
@@ -63,7 +65,7 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implemen
             labelValues.clear();
             String count = String.valueOf(bag.values(ConnectionBag.ConnectionState.NOT_USE_STATE).size());
             labelValues.add(count);
-        },30000, 30000, TimeUnit.MILLISECONDS);
+        }, ADD_DELAY, ADD_DELAY, TimeUnit.MILLISECONDS);
 
         MetricFamilySamples.Sample sample = new MetricFamilySamples.Sample("activeConnection", new ArrayList<>() {{
             add("active_connection");
