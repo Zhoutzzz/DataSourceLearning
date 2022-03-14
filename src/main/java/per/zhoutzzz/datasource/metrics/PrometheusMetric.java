@@ -40,6 +40,8 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implemen
 
     private static final int ADD_DELAY = 30000;
 
+    private static final int TIME_OUT = 1000;
+
     private PrometheusMetric(Builder b) {
         super(b);
         this.register();
@@ -81,7 +83,7 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implemen
         taskFuture.cancel(true);
 
         LABEL_EXECUTOR.shutdown();
-        if (!LABEL_EXECUTOR.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
+        if (!LABEL_EXECUTOR.awaitTermination(TIME_OUT, TimeUnit.MILLISECONDS)) {
             LABEL_EXECUTOR.shutdownNow();
         }
     }
