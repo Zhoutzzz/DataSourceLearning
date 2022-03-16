@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implements AutoCloseable {
 
-    private ConnectionBag bag;
+    private final ConnectionBag bag;
 
     private static final ScheduledExecutorService LABEL_EXECUTOR = new ScheduledThreadPoolExecutor(1, new ThreadPoolExecutor.AbortPolicy());
 
@@ -44,16 +44,17 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implemen
 
     private PrometheusMetric(Builder b) {
         super(b);
+        this.bag = ((PrometheusMetricBuild) b).bag;
         this.register();
     }
 
-    public static PrometheusMetricBuild build() {
-        return new PrometheusMetricBuild();
+    public static PrometheusMetricBuild build(ConnectionBag bag) {
+        return new PrometheusMetricBuild(bag);
     }
 
     @Override
     protected PrometheusMetric newChild() {
-        return PrometheusMetric.build().create();
+        return PrometheusMetric.build(this.bag).create();
     }
 
     @Override
@@ -89,6 +90,13 @@ public class PrometheusMetric extends SimpleCollector<PrometheusMetric> implemen
     }
 
     static class PrometheusMetricBuild extends Builder<PrometheusMetric.PrometheusMetricBuild, PrometheusMetric> {
+
+        private final ConnectionBag bag;
+
+        private PrometheusMetricBuild(ConnectionBag bag) {
+            this.bag = bag;
+        }
+
         @Override
         public PrometheusMetric create() {
             return new PrometheusMetric(this);
