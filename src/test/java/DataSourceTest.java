@@ -15,7 +15,6 @@
  */
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import per.zhoutzzz.datasource.MyDataSource;
 import per.zhoutzzz.datasource.config.PoolConfig;
@@ -23,9 +22,6 @@ import per.zhoutzzz.datasource.config.PoolConfig;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhoutzzz
