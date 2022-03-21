@@ -141,7 +141,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     }
 
     private static ExecutorService createThreadExecutor() {
-        return new ThreadPoolExecutor(1, 1, 3000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
+        return new ThreadPoolExecutor(1, 1, 600000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
             Thread thread = new Thread(r, "create-connection-thread-" + THREAD_NUM.getAndIncrement());
             thread.setDaemon(true);
             return thread;
