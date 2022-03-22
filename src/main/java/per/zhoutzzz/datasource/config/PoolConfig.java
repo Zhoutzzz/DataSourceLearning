@@ -18,11 +18,12 @@ package per.zhoutzzz.datasource.config;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 /**
  * @author zhoutzzz
  */
-@Data
+@Getter
 @Builder
 public class PoolConfig {
     private String username;
