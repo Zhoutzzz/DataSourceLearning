@@ -17,7 +17,6 @@
 package per.zhoutzzz.datasource.config;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 /**

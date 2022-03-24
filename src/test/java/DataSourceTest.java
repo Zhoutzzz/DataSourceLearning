@@ -26,12 +26,11 @@ import java.sql.ResultSet;
 /**
  * @author zhoutzzz
  */
-// shardingsphere函数支持程度
 public class DataSourceTest {
-//    public static void main(String[] args) throws Exception {
-//        MyDataSource myDataSource = createDs();
-//        testClose(myDataSource);
-//    }
+    public static void main(String[] args) throws Exception {
+        MyDataSource myDataSource = createDs();
+        testClose(myDataSource);
+    }
 
     private static MyDataSource createDs() throws Exception {
         PoolConfig.PoolConfigBuilder config = PoolConfig.builder();
@@ -47,63 +46,15 @@ public class DataSourceTest {
     }
 
     private static void testClose(MyDataSource myDataSource) {
-//        for (int i = 0; i < 200; i++) {
-//            new Thread(new Task(myDataSource)).start();
-//        }
-//
-//        try {
-//            Thread.sleep(10000L);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        for (int i = 0; i < 200; i++) {
+            new Thread(new Task(myDataSource)).start();
+        }
+
         try {
-            Connection connection1 = myDataSource.getConnection();
-            PreparedStatement preparedStatement1 = connection1.prepareStatement("select * from tests");
-            ResultSet resultSet1 = preparedStatement1.executeQuery();
-            while (resultSet1.next()) {
-                System.out.println(Thread.currentThread().getName() + "@" + connection1 + " -> " + resultSet1.getObject(1) + ":" + resultSet1.getObject(2));
-            }
-            System.out.println("线程创建完成");
-            myDataSource.close();
+            Thread.sleep(10000L);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-    }
-
-    public static void main(String[] args) throws Exception {
-        DruidDataSource druid = new DruidDataSource();
-        druid.setUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
-        druid.setUsername("root");
-        druid.setPassword("root");
-//        druid.setDriverClassName("com.mysql.jdbc.driver");
-        try (Connection c = druid.getConnection()) {
-            c.prepareStatement("select 1;").executeQuery();
-        }
-//        HikariConfig hikariConfig = new HikariConfig();
-//        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/study?useSSL=false");
-//        hikariConfig.setUsername("root");
-//        hikariConfig.setPassword("root");
-//        hikariConfig.setMaximumPoolSize(2);
-//        HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
-//        for (int i = 0; i < 10; i++) {
-//            new Thread(() -> {
-//                while (true) {
-//                    try {
-//                        Connection connection = hikariDataSource.getConnection();
-//                        PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
-//                        ResultSet resultSet = preparedStatement.executeQuery();
-//                        while (resultSet.next()) {
-//                            System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
-//                        }
-//                        connection.close();
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }).start();
-//
-//        }
     }
 }
 
@@ -115,7 +66,7 @@ class Task implements Runnable {
     @Override
     public void run() {
         int count = 0;
-//        while (true) {
+        while (true) {
         try {
             Connection connection;
             do {
@@ -135,6 +86,6 @@ class Task implements Runnable {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-//        }
+        }
     }
 }
