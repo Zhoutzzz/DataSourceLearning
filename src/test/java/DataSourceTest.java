@@ -65,8 +65,8 @@ class Task implements Runnable {
 
     @Override
     public void run() {
-        int count = 0;
-        while (true) {
+        int count = 0, time = 0;
+        while (++time < 200) {
         try {
             Connection connection;
             do {
