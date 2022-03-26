@@ -14,7 +14,6 @@
  * copies or substantial portions of the Software.
  */
 
-import com.alibaba.druid.pool.DruidDataSource;
 import lombok.RequiredArgsConstructor;
 import per.zhoutzzz.datasource.MyDataSource;
 import per.zhoutzzz.datasource.config.PoolConfig;
