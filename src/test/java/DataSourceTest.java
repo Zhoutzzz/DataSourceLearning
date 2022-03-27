@@ -45,14 +45,14 @@ public class DataSourceTest {
     }
 
     private static void testClose(MyDataSource myDataSource) {
-        for (int i = 0; i < 200; i++) {
-            new Thread(new Task(myDataSource)).start();
-        }
-
-        try {
-            Thread.sleep(10000L);
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (int i = 0; i < 20; i++) {
+            try {
+                Thread thread = new Thread(new Task(myDataSource));
+                thread.start();
+                thread.join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
@@ -65,26 +65,26 @@ class Task implements Runnable {
     @Override
     public void run() {
         int count = 0, time = 0;
-        while (++time < 200) {
-        try {
-            Connection connection;
-            do {
-                connection = myDataSource.getConnection();
-            } while (connection == null && ++count < 3);
-            if (count == 3) {
-                System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
-                return;
+        while (++time < 5) {
+            try {
+                Connection connection;
+                do {
+                    connection = myDataSource.getConnection();
+                } while (connection == null && ++count < 3);
+                if (count == 3) {
+                    System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
+                    return;
+                }
+                PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
+                }
+                connection.close();
+                Thread.yield();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
-            PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                System.out.println(Thread.currentThread().getName() + "@" + connection + " -> " + resultSet.getObject(1) + ":" + resultSet.getObject(2));
-            }
-            connection.close();
-            Thread.yield();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
         }
     }
 }
