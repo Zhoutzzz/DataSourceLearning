@@ -73,7 +73,7 @@ class Task implements Runnable {
                 } while (connection == null && ++count < 3);
                 if (count == 3) {
                     System.out.println(Thread.currentThread().getName() + " -> can't get connection, retry acquire connection.");
-                    return;
+                    continue;
                 }
                 PreparedStatement preparedStatement = connection.prepareStatement("select * from tests");
                 ResultSet resultSet = preparedStatement.executeQuery();

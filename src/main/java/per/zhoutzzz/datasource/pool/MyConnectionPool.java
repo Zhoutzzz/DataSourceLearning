@@ -159,6 +159,9 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     newConn = source.getConnection();
                     MyProxyConnection connection = ConnectionFactory.getConnection(newConn, bag);
                     bag.add(connection);
+                    if (config.getLeakThreshold() < config.getIdleTimeout()) {
+                        throw new Exception("threshold is small");
+                    }
                     leakTask.setThreshold(config.getLeakThreshold());
                     leakTask = leakTask.schedule(connection);
                     return Boolean.TRUE;
