@@ -20,14 +20,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import per.zhoutzzz.datasource.DriverSource;
 import per.zhoutzzz.datasource.config.PoolConfig;
+import per.zhoutzzz.datasource.exception.GetConnectionTimeoutException;
 import per.zhoutzzz.datasource.leak.LeakDetectionTask;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -104,7 +102,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
             }
             return conn;
         } while (startTime - System.currentTimeMillis() < config.getConnectionTimeoutMills());
-        throw new SQLTimeoutException("get connection timeout;");
+        throw new GetConnectionTimeoutException("get connection timeout;");
     }
 
     public DataSource getSource() {
