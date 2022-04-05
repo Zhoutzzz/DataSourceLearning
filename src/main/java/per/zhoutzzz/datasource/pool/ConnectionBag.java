@@ -93,6 +93,7 @@ public class ConnectionBag {
                 log.debug("正在归还连接");
             }
         }
+        log.debug("此连接成功归还");
     }
 
     void add(MyProxyConnection conn) {
