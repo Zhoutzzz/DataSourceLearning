@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
@@ -49,7 +50,7 @@ public class ConnectionBag {
 
     private final AtomicInteger waiters = new AtomicInteger(0);
 
-    private final static int LOCK_TIMEOUT = 2;
+    private final static int LOCK_TIMEOUT = 2000;
 
     public ConnectionBag(BagConnectionListener listener, Integer maxPoolSize, Integer minIdle) {
         this.listener = listener;
@@ -104,7 +105,7 @@ public class ConnectionBag {
     public void clean() {
         boolean b = false;
         try {
-            b = lock.tryLock(LOCK_TIMEOUT, SECONDS);
+            b = lock.tryLock(LOCK_TIMEOUT, MILLISECONDS);
             if (b) {
                 while (!shutdownStatus.compareAndSet(false, true)) {
                     log.info("shutdown");
