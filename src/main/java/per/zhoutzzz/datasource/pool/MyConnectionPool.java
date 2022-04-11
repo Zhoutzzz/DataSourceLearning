@@ -65,7 +65,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private LeakDetectionTask leakTask;
 
-    private static final int INIT_VALUE = 0, INIT_DELAY = 0, INIT_LEAK_THRESHOLD = 1000;
+    private static final int INIT_VALUE = 0, INIT_DELAY = 0, INIT_LEAK_THRESHOLD = 1000, KEEP_ALIVE = 600000;
 
     public MyConnectionPool(PoolConfig config) throws Exception {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
@@ -139,7 +139,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
     }
 
     private static ExecutorService createThreadExecutor() {
-        return new ThreadPoolExecutor(1, 1, 600000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
+        return new ThreadPoolExecutor(1, 1, KEEP_ALIVE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
             Thread thread = new Thread(r, "create-connection-thread-" + THREAD_NUM.getAndIncrement());
             thread.setDaemon(true);
             return thread;
