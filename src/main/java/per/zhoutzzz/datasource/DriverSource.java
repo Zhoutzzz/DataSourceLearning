@@ -48,7 +48,7 @@ public class DriverSource implements DataSource {
 
     private final Properties variables = new Properties();
 
-    public DriverSource(String username, String password, String url) throws Exception {
+    public DriverSource(String username, String password, String url) throws SQLException {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("必须输入用户名");
         }

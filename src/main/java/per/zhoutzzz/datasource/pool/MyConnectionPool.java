@@ -67,7 +67,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private static final int INIT_VALUE = 0, INIT_DELAY = 0, INIT_LEAK_THRESHOLD = 1000, KEEP_ALIVE = 600000;
 
-    public MyConnectionPool(PoolConfig config) throws Exception {
+    public MyConnectionPool(PoolConfig config) throws SQLException {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
