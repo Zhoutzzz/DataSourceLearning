@@ -65,6 +65,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private LeakDetectionTask leakTask;
 
+    private static final long CREATE_CONNECTION_TIMEOUT = 3000L;
+
     private static final int INIT_VALUE = 0, INIT_DELAY = 0, INIT_LEAK_THRESHOLD = 1000, KEEP_ALIVE = 600000;
 
     public MyConnectionPool(PoolConfig config) throws SQLException {
@@ -80,7 +82,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private void initConnection() {
         try {
-            Boolean isCreate = addBagItem().get(3000, TimeUnit.MILLISECONDS);
+            Boolean isCreate = addBagItem().get(CREATE_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
             if (!isCreate)
                 log.warn("初始化创建连接失败");
         } catch (Exception e) {
