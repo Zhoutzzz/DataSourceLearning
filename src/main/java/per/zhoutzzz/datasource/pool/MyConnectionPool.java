@@ -65,16 +65,19 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
 
     private LeakDetectionTask leakTask;
 
-    private static final long CREATE_CONNECTION_TIMEOUT = 3000L;
+    private static final long CREATE_CONNECTION_TIMEOUT = 3000L,
+        INIT_DELAY = 0L,
+        DELAY = 15000L,
+        KEEP_ALIVE = 600000L;
 
-    private static final int INIT_VALUE = 0, INIT_DELAY = 0, INIT_LEAK_THRESHOLD = 1000, KEEP_ALIVE = 600000;
+    private static final int INIT_VALUE = 0, INIT_LEAK_THRESHOLD = 1000;
 
     public MyConnectionPool(PoolConfig config) throws SQLException {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
         this.bag = new ConnectionBag(this, config.getMaxPoolSize(), config.getMinIdle());
         this.config = config;
         this.totalConnections = new AtomicInteger(INIT_VALUE);
-        keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), INIT_DELAY, 15000, TimeUnit.MILLISECONDS);
+        keepAliveExecutor.scheduleWithFixedDelay(new KeepAliveTask(), INIT_DELAY, DELAY, TimeUnit.MILLISECONDS);
         this.leakTask = new LeakDetectionTask(leakTaskExecutor,
             config.getLeakThreshold() == null ? INIT_LEAK_THRESHOLD : config.getLeakThreshold());
         this.initConnection();
