@@ -169,7 +169,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                     leakTask = leakTask.schedule(connection);
                     return Boolean.TRUE;
                 }
-            } catch (Exception e) {
+            } catch (SQLException e) {
                 if (newConn != null) {
                     newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5000);
                 }
