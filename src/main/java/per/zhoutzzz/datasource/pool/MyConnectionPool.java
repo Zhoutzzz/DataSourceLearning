@@ -70,7 +70,8 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
         DELAY = 15000L,
         KEEP_ALIVE = 600000L;
 
-    private static final int INIT_VALUE = 0, INIT_LEAK_THRESHOLD = 1000, VALIDATION_TIMEOUT = 10;
+    private static final int INIT_VALUE = 0, INIT_LEAK_THRESHOLD = 1000, VALIDATION_TIMEOUT = 10,
+        CONNECTION_NETWORK_TIMEOUT = 5000;
 
     public MyConnectionPool(PoolConfig config) throws SQLException {
         this.source = new DriverSource(config.getUsername(), config.getPassword(), config.getJdbcUrl());
@@ -171,7 +172,7 @@ public class MyConnectionPool implements ConnectionBag.BagConnectionListener {
                 }
             } catch (SQLException e) {
                 if (newConn != null) {
-                    newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5000);
+                    newConn.setNetworkTimeout(Executors.newSingleThreadExecutor(), CONNECTION_NETWORK_TIMEOUT);
                 }
                 throw e;
             }
