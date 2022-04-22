@@ -68,7 +68,7 @@ public class DriverSource implements DataSource {
             this.variables.setProperty("user", username);
             this.variables.setProperty("jdbcUrl", url);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("初始化异常", e);
         }
     }
 
