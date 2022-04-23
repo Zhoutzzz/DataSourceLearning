@@ -48,6 +48,8 @@ public class DriverSource implements DataSource {
 
     private final Properties variables = new Properties();
 
+    private final AtomicInteger connectionCount = new AtomicInteger(0);
+
     public DriverSource(String username, String password, String url) throws SQLException {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("必须输入用户名");
@@ -72,11 +74,9 @@ public class DriverSource implements DataSource {
         }
     }
 
-    private final AtomicInteger i = new AtomicInteger(0);
-
     @Override
     public Connection getConnection() throws SQLException {
-        log.debug("线程 -> {},创建第 {} 个连接", Thread.currentThread().getName(), i.incrementAndGet());
+        log.debug("线程 -> {},创建第 {} 个连接", Thread.currentThread().getName(), connectionCount.incrementAndGet());
         return driver.connect(url, variables);
     }
 
