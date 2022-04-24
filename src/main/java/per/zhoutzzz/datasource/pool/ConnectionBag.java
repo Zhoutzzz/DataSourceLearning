@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * @author zhoutzzz
@@ -75,7 +74,9 @@ public class ConnectionBag {
                     }
                     connIndex--;
                 } catch (Exception e) {
-                    log.debug("超时时间内获取连接失败，继续重试");
+                    if (log.isDebugEnabled()) {
+                        log.debug("超时时间内获取连接失败，继续重试");
+                    }
                     continue;
                 }
             }
