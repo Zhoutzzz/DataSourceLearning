@@ -121,11 +121,12 @@ public class ConnectionBag {
 //            }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
+        }
+//        finally {
 //            if (b) {
 //                lock.unlock();
 //            }
-        }
+//        }
     }
 
     public Collection<MyProxyConnection> values(final int state) {
