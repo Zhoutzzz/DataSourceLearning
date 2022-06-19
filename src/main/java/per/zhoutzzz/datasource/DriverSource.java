@@ -136,6 +136,6 @@ public class DriverSource implements DataSource {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException
     {
-        return false;
+        throw new SQLFeatureNotSupportedException();
     }
 }
