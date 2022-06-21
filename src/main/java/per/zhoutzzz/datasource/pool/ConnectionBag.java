@@ -106,8 +106,6 @@ public class ConnectionBag {
     public void clean() {
         boolean b = false;
         try {
-//            b = lock.tryLock(LOCK_TIMEOUT, MILLISECONDS);
-//            if (b) {
                 while (!shutdownStatus.compareAndSet(false, true)) {
                     log.info("shutdown");
                 }
@@ -118,15 +116,9 @@ public class ConnectionBag {
                     }
                     connectionList.clear();
                 }
-//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        finally {
-//            if (b) {
-//                lock.unlock();
-//            }
-//        }
     }
 
     public Collection<MyProxyConnection> values(final int state) {
